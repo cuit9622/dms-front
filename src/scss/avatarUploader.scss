@@ -1,0 +1,10 @@
+//使Avatar组件占满父元素的scss
+#avatarUploader {
+  span {
+    height: 100%;
+    div {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
