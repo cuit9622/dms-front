@@ -38,59 +38,47 @@ export const generateRouter = (routerStr: string | null) => {
 
     const menuTree = JSON.parse(routerStr)
     const antICONS: any = ICONS
-    function createRouter(list: MenuItem[]) {
-        let router: any[] = [];
-        if (list && list.length > 0) {
-            list.map((item: any) => {
-                const children = item.children;
-                item = item.menu;
-                const Component = lodable(() => {
-                    return import(item.componentPath);
-                });
-                if (children && children.length > 0) {
-                    router.push({
-                        path: item.routePath,
-                        children: createRouter(children),
-                    });
-                } else {
-                    router.push({
-                        path: item.routePath,
-                        element: <Component />,
-                    });
-                }
-            });
-        }
+    const map: any = {}
+    function createMenuAndRouter(list: MenuItem[]): any[] {
+        const menuArr: any[] = []
+        const routeArr: any[] = []
 
-        return router
-    }
-    const createMenu = (menuList: MenuItem[]): any[] => {
-        let arr: any[] = [];
-        if (menuList && menuList.length > 0) {
-            menuList.map((item: any) => {
-                const menu = item.menu;
-                if (!item.icon) {
-                    console.log(item)
-                }
-                const ICON = antICONS[item.menu.icon]
-                if (item.children && item.children.length > 0) {
-                    arr.push({
-                        key: menu.menuId,
-                        icon: <ICON />,
-                        label: menu.title,
-                        children: createMenu(item.children),
-                    });
-                } else {
-                    arr.push({
-                        key: menu.menuId,
-                        icon: <ICON />,
-                        label: menu.title,
-                    });
-                }
-            });
+        for (const item of list) {
+            const menu = item.menu
+            const key = menu.routePath
+            const children = item.children
+            const ICON = antICONS[item.menu.icon]
+
+            map[key] = menu.title
+            if (children && children.length > 0) {
+                const [childMenu, childRoute] = createMenuAndRouter(children)
+                menuArr.push({
+                    key: key,
+                    icon: <ICON />,
+                    label: menu.title,
+                    children: childMenu
+                })
+                routeArr.push({
+                    path: key,
+                    children: childRoute
+                })
+            } else {
+                const Component = lodable(() => import(`../${menu.componentPath}`));
+                menuArr.push({
+                    key: key,
+                    icon: <ICON />,
+                    label: menu.title,
+                })
+                routeArr.push({
+                    path: key,
+                    element: <Component />,
+                })
+            }
         }
-        return arr
-    };
-    const router = createRouter(menuTree)
+        return [menuArr, routeArr]
+    }
+
+    const [menu, router] = createMenuAndRouter(menuTree)
 
     //无效的路径重定向到第一个页面
     let path
@@ -106,7 +94,7 @@ export const generateRouter = (routerStr: string | null) => {
         },
         {
             path: "/",
-            element: <Main menu={createMenu(menuTree)} />,
+            element: <Main menu={menu} />,
             children: router,
         },
         {

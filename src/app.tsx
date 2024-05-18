@@ -16,10 +16,7 @@ export const GlobalContext = React.createContext<{
 
 export default function App(props: any) {
   //通过token中的信息设置对应路由
-  let targetRouter = defaultRouter
-  const routerstr = localStorage.getItem('router')
-
-  targetRouter = generateRouter(routerstr)
+  const targetRouter = generateRouter(localStorage.getItem('router'))
 
   const [messageApi, contextHolder] = message.useMessage()
   const [router, setRouter] = useState(targetRouter)
@@ -50,7 +47,7 @@ export default function App(props: any) {
       })
     }
     axios.interceptors.response.use((response) => {
-      let data = response.data
+      const data: { code: number, msg: string, data: any } = response.data
       if (data.code != 200) {
         switch (data.code) {
           case 401: //token异常时将路由设置为默认路由
@@ -67,7 +64,7 @@ export default function App(props: any) {
         }
         return Promise.reject(response)
       }
-      return response
+      return data.data
     })
     return () => {
       axios.interceptors.response.clear()
