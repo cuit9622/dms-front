@@ -1,14 +1,9 @@
-import {
-  GithubOutlined,
-  LockOutlined,
-  UserOutlined
-} from '@ant-design/icons'
-import { Avatar, Button, Form, Input, Layout, Modal, Typography } from 'antd'
+import { GithubOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Button, Form, Input, Layout, Typography } from 'antd'
 import { Footer } from 'antd/es/layout/layout'
 import { GlobalContext } from 'app'
 import CFTurnstile from 'components/common/CFTurnstile'
-import { passwordRule } from 'components/person/changePassword'
-import React, { useContext, useRef, useState } from 'react'
+import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'tools/axios'
 
@@ -17,63 +12,16 @@ const { Title, Text } = Typography
 
 export function Login(props: any) {
   const marginX = 20
-  const { messageApi, setRouter, setUser } = useContext(GlobalContext)
-  const [modalOpen, setModalOpen] = useState(false)
-  const characterButtons = useRef<React.ReactNode[]>([])
+  const { messageApi } = useContext(GlobalContext)
   const navigate = useNavigate()
 
-  function CharacterButton(props: {
-    role: string
-    router: any
-    Icon: React.FC<{ style?: React.CSSProperties }>
-    name: string
-  }) {
-    return (
-      <Button
-        style={{
-          width: 120,
-          height: 120,
-          marginLeft: 10,
-          marginRight: 10,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        onClick={() => {
-          axios
-            .post('/auth/roleToken', null, {
-              params: {
-                role: props.role,
-              },
-            })
-            .then((response) => {
-              const data = response.data
-              localStorage.setItem('token', data.data)
-              axios.get('/auth/token').then((resp) => {
-                if (resp.data.data.grade) {
-                  resp.data.data.grade = resp.data.data.grade + '级'
-                }
-                if (resp.data.data.classNumber) {
-                  resp.data.data.classNumber = resp.data.data.classNumber + '班'
-                }
-                setUser(resp.data.data)
-                setRouter(props.router)
-              })
-            })
-        }}>
-        <props.Icon style={{ fontSize: 90 }} />
-        <div>{props.name}</div>
-      </Button>
-    )
-  }
-
-  const onFinish = (values: any) => {
-    axios.post('/login', values).then((response) => {
-      const data = response.data
-      messageApi.success('成功登录')
-      localStorage.setItem('token', data.data.token)
-    })
+  const onFinish = async (values: any) => {
+    const response = await axios.post('/auth/login', values)
+    const data = response.data
+    messageApi.success('成功登录')
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('router', JSON.stringify(data.menuTree))
+    window.location.pathname = '/'
   }
   function openGithub() {
     window.open('https://github.com/EngineerProject1/olms-front')
@@ -81,22 +29,6 @@ export function Login(props: any) {
 
   return (
     <Layout style={{ width: '100%', height: '100%', background: '#F0F2F5' }}>
-      <Modal
-        title="请选择要登录的角色"
-        centered
-        open={modalOpen}
-        footer={null}
-        closable={false}>
-        <div
-          style={{
-            height: 180,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          {characterButtons.current}
-        </div>
-      </Modal>
       <Content
         style={{
           margin: 0,
@@ -139,7 +71,7 @@ export function Login(props: any) {
               }}>
               <Avatar src={'/logo.svg'} />
               <Title level={2} style={{ marginBottom: 3, marginLeft: 8 }}>
-                OLMS
+                DMS
               </Title>
             </div>
             <Form
@@ -157,7 +89,7 @@ export function Login(props: any) {
                 name="password"
                 rules={[
                   { required: true, message: '请输入密码' },
-                  passwordRule,
+                  // passwordRule,
                 ]}>
                 <Input.Password placeholder="密码" prefix={<LockOutlined />} />
               </Form.Item>
@@ -209,10 +141,10 @@ export function Login(props: any) {
           <Text
             type="secondary"
             style={{ marginLeft: marginX, marginRight: marginX }}>
-            OLMS
+            DMS
           </Text>
         </div>
-        <Text type="secondary">Copyright ©2023 Produced by cuit9622</Text>
+        <Text type="secondary">Copyright ©2024 Produced by cuit9622</Text>
       </Footer>
     </Layout>
   )

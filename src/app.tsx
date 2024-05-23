@@ -47,8 +47,8 @@ export default function App(props: any) {
       })
     }
     axios.interceptors.response.use((response) => {
-      const data: { code: number, msg: string, data: any } = response.data
-      if (data.code != 200) {
+      const data: { code: number; msg: string; data: any } = response.data
+      if (data.code != 0) {
         switch (data.code) {
           case 401: //token异常时将路由设置为默认路由
             //只显示一次token异常
@@ -64,7 +64,8 @@ export default function App(props: any) {
         }
         return Promise.reject(response)
       }
-      return data.data
+      response.data = data.data
+      return response
     })
     return () => {
       axios.interceptors.response.clear()

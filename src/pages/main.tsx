@@ -25,7 +25,7 @@ const headerColor = '#ffffff'
 function MenuTrigger(props: {
   collapsed: boolean
   toggleCollapsed: React.MouseEventHandler<HTMLAnchorElement> &
-  React.MouseEventHandler<HTMLButtonElement>
+    React.MouseEventHandler<HTMLButtonElement>
 }) {
   return (
     <div
