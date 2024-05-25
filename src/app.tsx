@@ -4,7 +4,7 @@ import zhCN from 'antd/locale/zh_CN'
 import { User } from 'model/User'
 import React, { useEffect, useState } from 'react'
 import { RouterProvider } from 'react-router-dom'
-import { defaultRouter, generateRouter } from 'router/router'
+import { generateRouter } from 'router/router'
 import axios from 'tools/axios'
 
 export const GlobalContext = React.createContext<{
@@ -52,11 +52,10 @@ export default function App(props: any) {
         switch (data.code) {
           case 401: //token异常时将路由设置为默认路由
             //只显示一次token异常
-            if (localStorage.getItem('token')) {
-              messageApi.error(data.msg)
-            }
+            messageApi.error(data.msg)
             localStorage.removeItem('token')
-            setRouter(defaultRouter)
+            localStorage.removeItem('router')
+            window.location.pathname = '/'
             break
           default:
             messageApi.error(data.msg)

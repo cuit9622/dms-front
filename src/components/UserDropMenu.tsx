@@ -25,14 +25,13 @@ const UserDropMenu = (props: {
   }
 
   const logout = () => {
-    axios.get('/auth/logout').then((resp) => {
-      if (resp.data.code === 200) {
+    axios.get('/auth/logout').then(() => {
+      messageApi.success('成功退出登录')
+      setTimeout(() => {
         localStorage.removeItem('token')
-        messageApi.success('成功退出登录')
-        setTimeout(() => {
-          location.href = '/login'
-        }, 800)
-      }
+        localStorage.removeItem('router')
+        window.location.pathname = '/'
+      }, 800)
     })
   }
   const items: MenuProps['items'] = [
