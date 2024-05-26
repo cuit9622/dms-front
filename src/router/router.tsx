@@ -1,5 +1,8 @@
 import * as ICONS from '@ant-design/icons/'
 import lodable from '@loadable/component'
+import { BasicInformation } from 'components/person/basicInformation'
+import { ChangePassword } from 'components/person/changePassword'
+import Person from 'components/person/person'
 import { Login } from 'pages/login'
 import Main from 'pages/main'
 import { Navigate, createBrowserRouter } from 'react-router-dom'
@@ -89,6 +92,17 @@ export const generateRouter = (routerStr: string | null) => {
   } else {
     path = router[0].path
   }
+  router.push({
+    path: 'person',
+    element: <Person />,
+    children: [
+      { path: 'basicInformation', element: <BasicInformation /> },
+      {
+        path: 'changePassword',
+        element: <ChangePassword />,
+      },
+    ],
+  })
   return createBrowserRouter([
     {
       path: '/login',

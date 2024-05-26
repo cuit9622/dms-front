@@ -23,8 +23,6 @@ export default function App(props: any) {
   const [user, setUser] = useState<User>({
     id: 0,
     username: '',
-    passowrd: '',
-    salt: '',
     realName: '',
     sex: '',
     phone: '',
@@ -35,37 +33,50 @@ export default function App(props: any) {
   })
 
   useEffect(() => {
+    axios.interceptors.response.use(
+      (response) => {
+        const data: { code: number; msg: string; data: any } = response.data
+        if (data.code != 0) {
+          switch (data.code) {
+            case 401: //token异常时将路由设置为默认路由
+              //只显示一次token异常
+              messageApi.error(data.msg)
+              localStorage.removeItem('token')
+              localStorage.removeItem('router')
+              window.location.pathname = '/'
+              break
+            default:
+              messageApi.error(data.msg)
+              break
+          }
+          return Promise.reject(response)
+        }
+        response.data = data.data
+        return response
+      },
+      (error) => {
+        let msg = error.message
+        const data: { code: number; msg: string; data: any } =
+          error.response.data
+        if (data) msg = data.msg
+        messageApi.error(msg)
+      }
+    )
+
+    //Token登录
     if (localStorage.getItem('token') != null) {
       axios.get('/auth/token').then((resp) => {
-        if (resp.data.data.grade) {
-          resp.data.data.grade = resp.data.data.grade + '级'
+        const data = resp.data
+        if (data.grade) {
+          data.grade = data.grade + '级'
         }
-        if (resp.data.data.classNumber) {
-          resp.data.data.classNumber = resp.data.data.classNumber + '班'
+        if (data.classNumber) {
+          data.classNumber = data.classNumber + '班'
         }
-        setUser(resp.data.data)
+        setUser(data)
       })
     }
-    axios.interceptors.response.use((response) => {
-      const data: { code: number; msg: string; data: any } = response.data
-      if (data.code != 0) {
-        switch (data.code) {
-          case 401: //token异常时将路由设置为默认路由
-            //只显示一次token异常
-            messageApi.error(data.msg)
-            localStorage.removeItem('token')
-            localStorage.removeItem('router')
-            window.location.pathname = '/'
-            break
-          default:
-            messageApi.error(data.msg)
-            break
-        }
-        return Promise.reject(response)
-      }
-      response.data = data.data
-      return response
-    })
+
     return () => {
       axios.interceptors.response.clear()
     }

@@ -41,13 +41,13 @@ export function BasicInformation(props: any) {
       autoComplete="off">
       <div style={{ display: 'flex' }}>
         <div style={{ width: '70%' }}>
-          <Form.Item label="姓名" name="realName" rules={[{ message: '' }]}>
+          <Form.Item label="姓名" name="nickName" rules={[{ message: '' }]}>
             <Input placeholder="" disabled />
           </Form.Item>
           <Form.Item label="性别" name="sex" rules={[{ message: '' }]}>
             <Radio.Group disabled>
-              <Radio value="男">男</Radio>
-              <Radio value="女">女</Radio>
+              <Radio value={1}>男</Radio>
+              <Radio value={0}>女</Radio>
             </Radio.Group>
           </Form.Item>
           <Form.Item label="学院" name="collegeName" rules={[{ message: '' }]}>
@@ -109,7 +109,7 @@ export function BasicInformation(props: any) {
           <MyUpload
             setName={setFileName}
             fileList={
-              user.avatar ? '/api/img/download?name=' + user.avatar : undefined
+              user.avatar ? '/api/static/img/' + user.avatar : undefined
             }
           />
         </div>

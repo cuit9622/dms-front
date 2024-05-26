@@ -3,7 +3,8 @@ import { Avatar, Button, Form, Input, Layout, Typography } from 'antd'
 import { Footer } from 'antd/es/layout/layout'
 import { GlobalContext } from 'app'
 import CFTurnstile from 'components/common/CFTurnstile'
-import { useContext } from 'react'
+import { passwordRule } from 'components/person/changePassword'
+import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'tools/axios'
 
@@ -13,15 +14,21 @@ const { Title, Text } = Typography
 export function Login(props: any) {
   const marginX = 20
   const { messageApi } = useContext(GlobalContext)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const onFinish = async (values: any) => {
-    const response = await axios.post('/auth/login', values)
-    const data = response.data
-    messageApi.success('成功登录')
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('router', JSON.stringify(data.menuTree))
-    window.location.pathname = '/'
+    setLoading(true)
+    try {
+      const response = await axios.post('/auth/login', values)
+      const data = response.data
+      messageApi.success('成功登录')
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('router', JSON.stringify(data.menuTree))
+      window.location.pathname = '/'
+    } catch (error) {
+      setLoading(false)
+    }
   }
   function openGithub() {
     window.open('https://github.com/EngineerProject1/olms-front')
@@ -89,7 +96,7 @@ export function Login(props: any) {
                 name="password"
                 rules={[
                   { required: true, message: '请输入密码' },
-                  // passwordRule,
+                  passwordRule,
                 ]}>
                 <Input.Password placeholder="密码" prefix={<LockOutlined />} />
               </Form.Item>
@@ -102,7 +109,8 @@ export function Login(props: any) {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  style={{ width: '100%' }}>
+                  style={{ width: '100%' }}
+                  loading={loading}>
                   登录
                 </Button>
               </Form.Item>

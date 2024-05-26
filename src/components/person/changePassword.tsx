@@ -14,15 +14,14 @@ export function ChangePassword() {
   const { messageApi } = useContext(GlobalContext)
   const [form] = Form.useForm()
 
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     let requestData = {
       oldPassword: values.oldPassword,
       newPassword: values.password,
     }
-    axios.put('/auth/password', null, { params: requestData }).then(() => {
-      messageApi.success('用户密码修改成功')
-      axios.get('/auth/token')
-    })
+    await axios.put('/auth/password', requestData)
+    messageApi.success('用户密码修改成功')
+    axios.get('/auth/token')
   }
 
   return (
