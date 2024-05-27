@@ -60,6 +60,7 @@ export default function App(props: any) {
           error.response.data
         if (data) msg = data.msg
         messageApi.error(msg)
+        return Promise.reject(error)
       }
     )
 

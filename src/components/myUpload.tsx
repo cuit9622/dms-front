@@ -75,7 +75,8 @@ const MyUpload = ({
         listType="picture-card"
         className="avatar-uploader"
         showUploadList={false}
-        action="/api/img/upload"
+        action="/api/auth/img/upload"
+        headers={{ token: String(localStorage.getItem('token')) }}
         beforeUpload={beforeUpload}
         onChange={handleChange}>
         {imageUrl ? (

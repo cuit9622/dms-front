@@ -11,24 +11,24 @@ export function BasicInformation(props: any) {
   ).selectedRole
   const { user, messageApi } = useContext(GlobalContext)
   const [form] = Form.useForm()
-  const [fileName, setFileName] = useState(user.avatar)
+  const [fileName, setFileName] = useState('')
 
   useEffect(() => {
     form.setFieldsValue(user)
+    setFileName(user.avatar)
   }, [user])
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     let requestData = {
       phone: values.phone,
-      email: values.email,
+      // email: values.email,
       avatar: fileName,
     }
-    axios.put('/auth/info', null, { params: requestData }).then(() => {
-      messageApi.success('成功修改个人信息')
-      //成功修改后延时刷新页面
-      setTimeout(() => {
-        location.reload()
-      }, 800)
-    })
+    await axios.put('/auth/info', requestData)
+    messageApi.success('成功修改个人信息')
+    //成功修改后延时刷新页面
+    setTimeout(() => {
+      location.reload()
+    }, 800)
   }
 
   return (
@@ -38,21 +38,24 @@ export function BasicInformation(props: any) {
       style={{ maxWidth: 620, width: '100%' }}
       onFinish={onFinish}
       layout="vertical"
-      autoComplete="off">
+      autoComplete="off"
+      onFinishFailed={(err) => {
+        console.error(err)
+      }}>
       <div style={{ display: 'flex' }}>
         <div style={{ width: '70%' }}>
-          <Form.Item label="姓名" name="nickName" rules={[{ message: '' }]}>
+          <Form.Item label="姓名" name="nickName">
             <Input placeholder="" disabled />
           </Form.Item>
-          <Form.Item label="性别" name="sex" rules={[{ message: '' }]}>
+          <Form.Item label="性别" name="sex">
             <Radio.Group disabled>
               <Radio value={1}>男</Radio>
               <Radio value={0}>女</Radio>
             </Radio.Group>
           </Form.Item>
-          <Form.Item label="学院" name="collegeName" rules={[{ message: '' }]}>
+          {/* <Form.Item label="学院" name="collegeName" rules={[{ message: '' }]}>
             <Input placeholder="" disabled />
-          </Form.Item>
+          </Form.Item> */}
           {role === 'student' ? (
             <>
               <Form.Item
@@ -72,7 +75,7 @@ export function BasicInformation(props: any) {
               </Form.Item>
             </>
           ) : null}
-          <Form.Item
+          {/* <Form.Item
             label="邮箱"
             name="email"
             rules={[
@@ -83,7 +86,7 @@ export function BasicInformation(props: any) {
               },
             ]}>
             <Input placeholder="" type="email" />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
             label="手机号"
             name="phone"
