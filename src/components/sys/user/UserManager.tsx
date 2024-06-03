@@ -32,7 +32,7 @@ const UserManagement: React.FC = () => {
   // 获取用户信息
   const fetchUsers = async (page: number, pageSize: number) => {
     try {
-      const response = await axios.get("/sys-service/users", {
+      const response = await axios.get("/sys-service/user/list", {
         params: { page, pageSize },
       });
       const data = response.data;
@@ -55,16 +55,22 @@ const UserManagement: React.FC = () => {
     form.resetFields();
   };
 
-  const handleEdit = (user: User) => {
-    setIsModalVisible(true);
-    setIsEdit(true);
-    setCurrentUser(user);
-    form.setFieldsValue(user);
+  const handleEdit = async (user: User) => {
+    try {
+      const response = await axios.get(`/sys-service/role/list/${user.userId}`);
+      const userWithRole = { ...user, roleId: response.data.roleId };
+      setIsModalVisible(true);
+      setIsEdit(true);
+      setCurrentUser(userWithRole);
+      form.setFieldsValue({ ...userWithRole, resetPassword: false });
+    } catch (error) {
+      message.error('获取用户角色信息失败');
+    }
   };
 
   const handleDelete = async (userId: number) => {
     try {
-      await axios.delete(`/sys-service/users/${userId}`);
+      await axios.delete(`/sys-service/user/list/${userId}`);
       fetchUsers(pagination.current, pagination.pageSize);
       message.success("用户删除成功");
     } catch (error) {
