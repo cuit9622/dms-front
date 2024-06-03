@@ -12,7 +12,7 @@ interface User {
   username: string;
 }
 
-const UserManagement: React.FC = () => {
+const UserManager: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -22,19 +22,21 @@ const UserManagement: React.FC = () => {
   // 默认的页数
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
   });
 
   useEffect(() => {
     fetchUsers(pagination.current, pagination.pageSize);
-  }, []);
+  }, [pagination.current, pagination.pageSize]);
 
   // 获取用户信息
   const fetchUsers = async (page: number, pageSize: number) => {
     try {
+      console.log("xxxx" + page);
+
       const response = await axios.get("/sys-service/user/list", {
-        params: { page, pageSize },
+        params: { page: page, pageSize: pageSize },
       });
       const data = response.data;
 
@@ -47,7 +49,7 @@ const UserManagement: React.FC = () => {
 
   // 处理表格改变的函数
   const handleTableChange = (pagination: any) => {
-    fetchUsers(pagination.current, pagination.pageSize);
+    // fetchUsers(pagination.current, pagination.pageSize);
     setPagination(pagination);
   };
 
@@ -128,8 +130,17 @@ const UserManagement: React.FC = () => {
       <Table
         columns={columns}
         dataSource={users}
-        rowKey="id"
-        pagination={pagination}
+        rowKey="userId"
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true, // 显示每页大小选择器
+          pageSizeOptions: [5, 10, 15, 20],
+          showQuickJumper: true, // 显示快速跳转
+          onChange: handleTableChange,
+          onShowSizeChange: handleTableChange,
+        }}
         onChange={handleTableChange}
       />
       <Modal
@@ -144,4 +155,4 @@ const UserManagement: React.FC = () => {
   );
 };
 
-export default UserManagement;
+export default UserManager;
