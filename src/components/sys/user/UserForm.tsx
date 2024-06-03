@@ -9,7 +9,7 @@ interface UserFormProps {
 const UserForm: React.FC<UserFormProps> = ({ form }) => (
   <Form form={form} layout="vertical">
     <Form.Item
-      name="name"
+      name="nickName"
       label="姓名"
       rules={[{ required: true, message: "请输入姓名" }]}
     >
@@ -21,19 +21,6 @@ const UserForm: React.FC<UserFormProps> = ({ form }) => (
       rules={[{ required: true, message: "请输入电话" }]}
     >
       <Input />
-    </Form.Item>
-    <Form.Item name="email" label="邮箱">
-      <Input />
-    </Form.Item>
-    <Form.Item
-      name="gender"
-      label="性别"
-      rules={[{ required: true, message: "请选择性别" }]}
-    >
-      <Radio.Group>
-        <Radio value="男">男</Radio>
-        <Radio value="女">女</Radio>
-      </Radio.Group>
     </Form.Item>
     <Form.Item
       name="role"
@@ -49,12 +36,11 @@ const UserForm: React.FC<UserFormProps> = ({ form }) => (
     >
       <Input />
     </Form.Item>
-    <Form.Item
-      name="password"
-      label="密码"
-      rules={[{ required: true, message: "请输入密码" }]}
-    >
-      <Input.Password />
+    <Form.Item name="resetPassword" label="是否重置密码" rules={[{ required: true, message: '请选择是否重置密码' }]}>
+      <Radio.Group>
+        <Radio value={true}>是</Radio>
+        <Radio value={false}>否</Radio>
+      </Radio.Group>
     </Form.Item>
   </Form>
 );

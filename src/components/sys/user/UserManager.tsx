@@ -4,11 +4,10 @@ import axios from "../../../tools/axios";
 import UserForm from "./UserForm";
 
 interface User {
-  id: number;
-  name: string;
+  userId: number;
+  nickName: string;
   phone: string;
-  email: string;
-  gender: string;
+  sex: string;
   role: string;
   username: string;
 }
@@ -36,8 +35,10 @@ const UserManagement: React.FC = () => {
       const response = await axios.get("/sys-service/users", {
         params: { page, pageSize },
       });
-      setUsers(response.data.users);
-      setPagination({ ...pagination, total: response.data.total });
+      const data = response.data;
+      
+      setUsers(data.records);
+      setPagination({ ...pagination, total: data.total });
     } catch (error) {
       message.error("获取用户失败");
     }
@@ -75,7 +76,7 @@ const UserManagement: React.FC = () => {
     try {
       const values = await form.validateFields();
       if (isEdit && currentUser) {
-        await axios.put(`/sys-service/users/${currentUser.id}`, values);
+        await axios.put(`/sys-service/users/${currentUser.userId}`, values);
       } else {
         await axios.post("/sys-service/users", values);
       }
@@ -92,16 +93,17 @@ const UserManagement: React.FC = () => {
   };
 
   const columns = [
-    { title: "姓名", dataIndex: "name", key: "name" },
+    { title: "用户名", dataIndex: "username", key: "username" },
+    { title: "姓名", dataIndex: "nickName", key: "nickName" },
     { title: "电话", dataIndex: "phone", key: "phone" },
-    { title: "邮箱", dataIndex: "email", key: "email" },
+
     {
       title: "操作",
       key: "actions",
       render: (_: any, record: User) => (
         <span>
           <Button onClick={() => handleEdit(record)}>编辑</Button>
-          <Button danger onClick={() => handleDelete(record.id)}>
+          <Button danger onClick={() => handleDelete(record.userId)}>
             删除
           </Button>
         </span>
