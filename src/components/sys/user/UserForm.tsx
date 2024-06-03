@@ -4,6 +4,7 @@ import axios from "../../../tools/axios";
 
 interface UserFormProps {
   form: FormInstance;
+  isEdit: boolean;
 }
 
 interface Role {
@@ -11,7 +12,7 @@ interface Role {
   roleName: string;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ form }) => {
+const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
   const [roles, setRoles] = useState<Role[]>([]);
 
   useEffect(() => {
@@ -31,16 +32,16 @@ const UserForm: React.FC<UserFormProps> = ({ form }) => {
   return (
     <Form form={form} layout="vertical">
       <Form.Item
-        name="nickName"
-        label="姓名"
-        rules={[{ required: true, message: "请输入姓名" }]}
+        name="username"
+        label="用户名"
+        rules={[{ required: true, message: "请输入账户名" }]}
       >
         <Input />
       </Form.Item>
       <Form.Item
-        name="phone"
-        label="电话"
-        rules={[{ required: true, message: "请输入电话" }]}
+        name="nickName"
+        label="姓名"
+        rules={[{ required: true, message: "请输入姓名" }]}
       >
         <Input />
       </Form.Item>
@@ -58,22 +59,24 @@ const UserForm: React.FC<UserFormProps> = ({ form }) => {
         </Select>
       </Form.Item>
       <Form.Item
-        name="username"
-        label="账户名"
-        rules={[{ required: true, message: "请输入账户名" }]}
+        name="phone"
+        label="电话"
+        rules={[{ required: true, message: "请输入电话" }]}
       >
         <Input />
       </Form.Item>
-      <Form.Item
-        name="resetPassword"
-        label="是否重置密码"
-        rules={[{ required: true, message: "请选择是否重置密码" }]}
-      >
-        <Radio.Group>
-          <Radio value={true}>是</Radio>
-          <Radio value={false}>否</Radio>
-        </Radio.Group>
-      </Form.Item>
+      {isEdit && (
+        <Form.Item
+          name="resetPassword"
+          label="是否重置密码"
+          rules={[{ required: true, message: "请选择是否重置密码" }]}
+        >
+          <Radio.Group>
+            <Radio value={true}>是</Radio>
+            <Radio value={false}>否</Radio>
+          </Radio.Group>
+        </Form.Item>
+      )}
     </Form>
   );
 };

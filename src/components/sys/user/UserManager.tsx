@@ -14,6 +14,7 @@ interface User {
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -36,7 +37,7 @@ const UserManagement: React.FC = () => {
         params: { page, pageSize },
       });
       const data = response.data;
-      
+
       setUsers(data.records);
       setPagination({ ...pagination, total: data.total });
     } catch (error) {
@@ -44,6 +45,7 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  // 处理表格改变的函数
   const handleTableChange = (pagination: any) => {
     fetchUsers(pagination.current, pagination.pageSize);
     setPagination(pagination);
@@ -64,7 +66,7 @@ const UserManagement: React.FC = () => {
       setCurrentUser(userWithRole);
       form.setFieldsValue({ ...userWithRole, resetPassword: false });
     } catch (error) {
-      message.error('获取用户角色信息失败');
+      message.error("获取用户角色信息失败");
     }
   };
 
@@ -78,6 +80,7 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  // 处理是新增还是删除用户
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
@@ -135,7 +138,7 @@ const UserManagement: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <UserForm form={form} />
+        <UserForm form={form} isEdit={isEdit} />
       </Modal>
     </div>
   );
