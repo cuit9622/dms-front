@@ -29,12 +29,35 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
     fetchRoles();
   }, []);
 
+  // 检查用户是否存在
+  const checkUsername = async (rule: any, value: string) => {
+    if (value) {
+      try {
+        const response = await axios.get(`/sys-service/user/username/${value}/${isEdit}`);
+
+        if (!response.data) {
+          throw new Error("用户名已存在");
+        }
+      } catch (error) {
+        return Promise.reject(new Error(error.message));
+      }
+    }
+
+    return Promise.resolve();
+  };
+
   return (
     <Form form={form} layout="vertical">
       <Form.Item
         name="username"
         label="用户名"
-        rules={[{ required: true, message: "请输入账户名" }]}
+        rules={[
+          {
+            required: true,
+            message: "用户名重复或未输入",
+            validator: checkUsername,
+          },
+        ]}
       >
         <Input />
       </Form.Item>

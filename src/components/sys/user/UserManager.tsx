@@ -33,13 +33,11 @@ const UserManager: React.FC = () => {
   // 获取用户信息
   const fetchUsers = async (page: number, pageSize: number) => {
     try {
-      console.log("xxxx" + page);
 
       const response = await axios.get("/sys-service/user/list", {
         params: { page: page, pageSize: pageSize },
       });
       const data = response.data;
-
       setUsers(data.records);
       setPagination({ ...pagination, total: data.total });
     } catch (error) {
@@ -86,16 +84,19 @@ const UserManager: React.FC = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      // 编辑
       if (isEdit && currentUser) {
         await axios.put(`/sys-service/users/${currentUser.userId}`, values);
+        message.success("添加成功");
       } else {
         await axios.post("/sys-service/users", values);
+        message.success("编辑成功");
       }
       fetchUsers(pagination.current, pagination.pageSize);
       setIsModalVisible(false);
-      message.success("用户保存成功");
+      
     } catch (error) {
-      message.error("保存用户失败");
+      message.error("操作失败");
     }
   };
 
