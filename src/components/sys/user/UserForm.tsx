@@ -8,7 +8,7 @@ interface UserFormProps {
 }
 
 interface Role {
-  roleId: number;
+  roleId: string;
   roleName: string;
 }
 
@@ -34,7 +34,7 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
     if (value) {
       try {
         const response = await axios.get(
-          `/sys-service/user/username/${value}/${isEdit}`
+          `/sys-service/user/${value}/${isEdit}`
         );
 
         if (!response.data) {
@@ -71,9 +71,9 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
         <Input />
       </Form.Item>
       <Form.Item name="sex" label="性别" rules={[{ required: true }]}>
-        <Radio.Group defaultValue={0}>
+        <Radio.Group>
           <Radio value={0}>男</Radio>
-          <Radio value={1}>女</Radio>
+          <Radio value={1}>女</Radio> 
         </Radio.Group>
       </Form.Item>
       <Form.Item

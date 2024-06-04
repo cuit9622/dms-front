@@ -4,7 +4,7 @@ import axios from "../../../tools/axios";
 import UserForm from "./UserForm";
 
 interface User {
-  userId: number;
+  userId: string;
   nickName: string;
   phone: string;
   sex: string;
@@ -39,7 +39,10 @@ const UserManager: React.FC = () => {
         params: { page: page, pageSize: pageSize },
       });
       const data = response.data;
+      console.log(data);
+      
       setUsers(data.records);
+      
       setPagination({ ...pagination, total: data.total });
     } catch (error) {
       message.error("获取用户失败");
@@ -73,7 +76,7 @@ const UserManager: React.FC = () => {
 
   const handleDelete = async (userId: number) => {
     try {
-      await axios.delete(`/sys-service/user/list/${userId}`);
+      await axios.delete(`/sys-service/user/delete/${userId}`);
       fetchUsers(pagination.current, pagination.pageSize);
       message.success("用户删除成功");
     } catch (error) {
