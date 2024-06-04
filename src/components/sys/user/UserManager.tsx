@@ -13,6 +13,8 @@ interface User {
 }
 
 const UserManager: React.FC = () => {
+  const tsex = ["男", "女"];
+
   const [users, setUsers] = useState<User[]>([]);
   // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -33,7 +35,6 @@ const UserManager: React.FC = () => {
   // 获取用户信息
   const fetchUsers = async (page: number, pageSize: number) => {
     try {
-
       const response = await axios.get("/sys-service/user/list", {
         params: { page: page, pageSize: pageSize },
       });
@@ -86,15 +87,14 @@ const UserManager: React.FC = () => {
       const values = await form.validateFields();
       // 编辑
       if (isEdit && currentUser) {
-        await axios.put(`/sys-service/users/${currentUser.userId}`, values);
-        message.success("添加成功");
+        await axios.put(`/sys-service/user/edit/${currentUser.userId}`, values);
+        message.success("修改成功");
       } else {
-        await axios.post("/sys-service/users", values);
-        message.success("编辑成功");
+        await axios.post("/sys-service/user/add", values);
+        message.success("添加成功");
       }
       fetchUsers(pagination.current, pagination.pageSize);
       setIsModalVisible(false);
-      
     } catch (error) {
       message.error("操作失败");
     }
@@ -108,6 +108,7 @@ const UserManager: React.FC = () => {
     { title: "用户名", dataIndex: "username", key: "username" },
     { title: "姓名", dataIndex: "nickName", key: "nickName" },
     { title: "电话", dataIndex: "phone", key: "phone" },
+    { title: "性别", dataIndex: "sex", key: "sex",render: (value)=><>{tsex[value]}</> },
 
     {
       title: "操作",

@@ -33,7 +33,9 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
   const checkUsername = async (rule: any, value: string) => {
     if (value) {
       try {
-        const response = await axios.get(`/sys-service/user/username/${value}/${isEdit}`);
+        const response = await axios.get(
+          `/sys-service/user/username/${value}/${isEdit}`
+        );
 
         if (!response.data) {
           throw new Error("用户名已存在");
@@ -67,6 +69,12 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
         rules={[{ required: true, message: "请输入姓名" }]}
       >
         <Input />
+      </Form.Item>
+      <Form.Item name="sex" label="性别" rules={[{ required: true }]}>
+        <Radio.Group defaultValue={0}>
+          <Radio value={0}>男</Radio>
+          <Radio value={1}>女</Radio>
+        </Radio.Group>
       </Form.Item>
       <Form.Item
         name="roleId"
