@@ -17,11 +17,12 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
   const [originUsername, setOriginUsername] = useState<string>("");
   useEffect(() => {
     // 获取所有角色信息
-  
+
     const fetchRoles = async () => {
       try {
         setOriginUsername(form.getFieldValue("username"));
         const response = await axios.get("/sys-service/role/list");
+        
         setRoles(response.data);
       } catch (error) {
         console.error("获取角色信息失败", error);
@@ -33,8 +34,8 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
   // 检查用户是否存在
   const checkUsername = async (rule: any, value: string) => {
     setOriginUsername(form.getFieldValue("username"));
-    console.log(originUsername);
-    
+
+
     if (value && value !== originUsername) {
       try {
         const response = await axios.get(

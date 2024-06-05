@@ -33,7 +33,7 @@ const RoleManager: React.FC = () => {
     pageSize: number,
     searchText: string
   ) => {
-    const resp = await axios.get("/sys-service/role/list", {
+    const resp = await axios.get("/sys-service/role/page", {
       params: { page, pageSize, roleName: searchText },
     });
     const data = resp.data;
@@ -69,7 +69,7 @@ const RoleManager: React.FC = () => {
       title: "确认删除",
       content: "你确定要删除这个角色吗？",
       onOk: async () => {
-        const resp = await axios.delete(`/sys-service/role/${roleId}`);
+        const resp = await axios.delete(`/sys-service/role/delete/${roleId}`);
         fetchRoles(pagination.current, pagination.pageSize, searchText);
         message.success(resp.data);
       },
@@ -83,10 +83,10 @@ const RoleManager: React.FC = () => {
   const handleAddOrUpdate = () => {
     async (role: any) => {
       if (editingRole) {
-        const resp = await axios.put(`/sys-service/role/${role.roleId}`, role);
+        const resp = await axios.put(`/sys-service/role/update/${role.roleId}`, role);
         message.success(resp.data);
       } else {
-        const resp = await axios.post("/sys-service/roles", role);
+        const resp = await axios.post("/sys-service/role/add", role);
         message.success(resp.data);
       }
       fetchRoles(pagination.current, pagination.pageSize, searchText);
