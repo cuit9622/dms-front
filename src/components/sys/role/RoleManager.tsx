@@ -26,22 +26,24 @@ const RoleManager: React.FC = () => {
   useEffect(() => {
     fetchRoles(pagination.current, pagination.pageSize, searchText);
     fetchPermissions();
-  }, []);
+  }, [editingRole]);
 
   const fetchRoles = async (
     page: number,
     pageSize: number,
     searchText: string
   ) => {
-    const response = await axios.get("/api/roles", {
+    const resp = await axios.get("/sys-service/role/list", {
       params: { page, pageSize, roleName: searchText },
     });
-    setRoles(response.data.roles);
-    setPagination({ ...pagination, total: response.data.total });
+    const data = resp.data;
+
+    setRoles(data.records);
+    setPagination({ ...pagination, total: data.total });
   };
 
   const fetchPermissions = async () => {
-    const response = await axios.get("/api/permissions");
+    const response = await axios.get("/sys-service/permissions");
     setPermissions(response.data);
   };
 
@@ -65,20 +67,24 @@ const RoleManager: React.FC = () => {
       title: "确认删除",
       content: "你确定要删除这个角色吗？",
       onOk: async () => {
-        const resp = await axios.delete(`/api/roles/${roleId}`);
+        const resp = await axios.delete(`/sys-service/role/${roleId}`);
         fetchRoles(pagination.current, pagination.pageSize, searchText);
         message.success(resp.data);
       },
     });
   };
 
+  const handleTableChange = (pagination: any) => {
+    setPagination(pagination);
+  };
+
   const handleAddOrUpdate = () => {
     async (role: any) => {
       if (editingRole) {
-        const resp = await axios.put(`/api/roles/${role.roleId}`, role);
+        const resp = await axios.put(`/sys-service/role/${role.roleId}`, role);
         message.success(resp.data);
       } else {
-        const resp = await axios.post("/api/roles", role);
+        const resp = await axios.post("/sys-service/roles", role);
         message.success(resp.data);
       }
       fetchRoles(pagination.current, pagination.pageSize, searchText);
@@ -102,7 +108,15 @@ const RoleManager: React.FC = () => {
       key: "action",
       render: (text: any, record: any) => (
         <>
-          <Button type="link" onClick={() => showEditModal(record)}>
+          <Button
+            type="link"
+            onClick={() => showEditModal(record)}
+            style={{
+              marginRight: 8,
+              backgroundColor: "#1890ff",
+              color: "white",
+            }}
+          >
             编辑
           </Button>
           <Button
@@ -111,6 +125,11 @@ const RoleManager: React.FC = () => {
               setEditingRole(record);
               setIsPermissionModalVisible(true);
             }}
+            style={{
+              marginRight: 8,
+              backgroundColor: "#1890ff",
+              color: "white",
+            }}
           >
             分配权限
           </Button>
@@ -118,6 +137,7 @@ const RoleManager: React.FC = () => {
             type="link"
             danger
             onClick={() => handleDelete(record.roleId)}
+            style={{ backgroundColor: "#ff4d4f", color: "white" }}
           >
             删除
           </Button>
@@ -137,7 +157,21 @@ const RoleManager: React.FC = () => {
         style={{ width: 200 }}
         allowClear
       />
-      <Table columns={columns} dataSource={roles} rowKey="roleId" />
+      <Table
+        columns={columns}
+        dataSource={roles}
+        rowKey="roleId"
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true, // 显示每页大小选择器
+          pageSizeOptions: [5, 10, 15, 20],
+          showQuickJumper: true, // 显示快速跳转
+          onChange: handleTableChange,
+          onShowSizeChange: handleTableChange,
+        }}
+      />
 
       <RoleForm
         visible={isModalVisible}

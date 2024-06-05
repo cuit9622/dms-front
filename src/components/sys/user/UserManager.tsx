@@ -52,9 +52,8 @@ const UserManager: React.FC = () => {
     }
   };
 
-  // 处理表格改变的函数
+  // 处理分页改变的函数
   const handleTableChange = (pagination: any) => {
-    // fetchUsers(pagination.current, pagination.pageSize);
     setPagination(pagination);
   };
 
