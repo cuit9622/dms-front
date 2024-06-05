@@ -108,6 +108,7 @@ const UserManager: React.FC = () => {
   };
 
   const handleCancel = () => {
+    form.resetFields;
     setIsModalVisible(false);
   };
 
@@ -132,8 +133,21 @@ const UserManager: React.FC = () => {
       key: "actions",
       render: (_: any, record: User) => (
         <span>
-          <Button onClick={() => handleEdit(record)}>编辑</Button>
-          <Button danger onClick={() => handleDelete(record.userId)}>
+          <Button
+            onClick={() => handleEdit(record)}
+            style={{
+              marginRight: 8,
+              backgroundColor: "#1890ff",
+              color: "white",
+            }}
+          >
+            编辑
+          </Button>
+          <Button
+            danger
+            onClick={() => handleDelete(record.userId)}
+            style={{ backgroundColor: "#ff4d4f", color: "white" }}
+          >
             删除
           </Button>
         </span>
@@ -174,7 +188,7 @@ const UserManager: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <UserForm form={form} isEdit={isEdit} />
+        <UserForm form={form} isEdit={isEdit}/>
       </Modal>
     </div>
   );
