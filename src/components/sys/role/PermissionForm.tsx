@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Checkbox, Tree } from "antd";
 
 const PermissionForm: React.FC<{
@@ -18,6 +18,12 @@ const PermissionForm: React.FC<{
     }));
   };
 
+  // 确保每次打开都是最新的数据
+  useEffect(() => {
+    if (visible) {
+      form.setFieldsValue({ permissions: role?.permissions || [] });
+    }
+  }, [visible, role]);
   return (
     <Modal
       title={`为 ${role?.roleName || "角色"} 分配权限`}

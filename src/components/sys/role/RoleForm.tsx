@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Input, Select } from "antd";
 
 const { Option } = Select;
@@ -11,6 +11,13 @@ const RoleForm: React.FC<{
   onSave: (role: any) => void;
 }> = ({ visible, role, onCancel, onSave }) => {
   const [form] = Form.useForm();
+
+  // 确保每次打开都是最新的数据
+  useEffect(() => {
+    if (visible) {
+      form.setFieldsValue(role || { roleName: "", roleType: "", remark: "" });
+    }
+  }, [visible, role]);
 
   return (
     <Modal
