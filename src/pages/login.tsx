@@ -22,6 +22,8 @@ export function Login(props: any) {
     try {
       const response = await axios.post('/auth/login', values)
       const data = response.data
+      console.log(data);
+      
       messageApi.success('成功登录')
       localStorage.setItem('token', data.token)
       localStorage.setItem('router', JSON.stringify(data.menuTree))

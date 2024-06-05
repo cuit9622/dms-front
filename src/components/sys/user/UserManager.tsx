@@ -47,7 +47,7 @@ const UserManager: React.FC = () => {
       setUsers(data.records);
 
       setPagination({ ...pagination, total: data.total });
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.data.msg);
     }
   };
@@ -68,13 +68,16 @@ const UserManager: React.FC = () => {
     try {
       const response = await axios.get(`/sys-service/role/list/${user.userId}`);
       const getUser = await axios.get(`/sys-service/user/${user.userId}`);
-      
-      const userWithRole: any = { ...getUser.data, roleId: response.data.roleId };
+
+      const userWithRole: any = {
+        ...getUser.data,
+        roleId: response.data.roleId,
+      };
       setIsModalVisible(true);
       setIsEdit(true);
       setCurrentUser(userWithRole);
       form.setFieldsValue({ ...userWithRole, resetPassword: false });
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.data.msg);
     }
   };
@@ -84,7 +87,7 @@ const UserManager: React.FC = () => {
       const response = await axios.delete(`/sys-service/user/delete/${userId}`);
       fetchUsers(pagination.current, pagination.pageSize, searchText);
       message.success(response.data);
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.data.msg);
     }
   };
@@ -100,7 +103,7 @@ const UserManager: React.FC = () => {
           values
         );
         console.log(resp);
-        
+
         message.success(resp.data);
       } else {
         const resp = await axios.post("/sys-service/user/add", values);
@@ -108,7 +111,7 @@ const UserManager: React.FC = () => {
       }
       fetchUsers(pagination.current, pagination.pageSize, searchText);
       setIsModalVisible(false);
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.data.msg);
     }
   };
@@ -141,7 +144,7 @@ const UserManager: React.FC = () => {
       title: "性别",
       dataIndex: "sex",
       key: "sex",
-      render: (value) => <>{tsex[value]}</>,
+      render: (value: any) => <>{tsex[value]}</>,
     },
 
     {
