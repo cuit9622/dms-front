@@ -45,7 +45,7 @@ const RoleManager: React.FC = () => {
   const fetchPermissions = async () => {
     const response = await axios.get("/sys-service/menu/list");
     console.log(response);
-    
+
     setPermissions(response.data);
   };
 
@@ -78,20 +78,22 @@ const RoleManager: React.FC = () => {
 
   const handleTableChange = (pagination: any) => {
     setPagination(pagination);
+    fetchRoles(pagination.current, pagination.pageSize, searchText);
   };
 
-  const handleAddOrUpdate = () => {
-    async (role: any) => {
-      if (editingRole) {
-        const resp = await axios.put(`/sys-service/role/update/${role.roleId}`, role);
-        message.success(resp.data);
-      } else {
-        const resp = await axios.post("/sys-service/role/add", role);
-        message.success(resp.data);
-      }
-      fetchRoles(pagination.current, pagination.pageSize, searchText);
-      setIsModalVisible(false);
-    };
+  const handleAddOrUpdate = async (role: any) => {
+    if (editingRole) {
+      const resp = await axios.put(
+        `/sys-service/role/update/${role.roleId}`,
+        role
+      );
+      message.success(resp.data);
+    } else {
+      const resp = await axios.post("/sys-service/role/add", role);
+      message.success(resp.data);
+    }
+    fetchRoles(pagination.current, pagination.pageSize, searchText);
+    setIsModalVisible(false);
   };
 
   const columns = [
@@ -150,15 +152,23 @@ const RoleManager: React.FC = () => {
 
   return (
     <div>
-      <Button type="primary" onClick={showAddModal}>
-        新增
-      </Button>
-      <Input.Search
-        placeholder="输入名称进行搜索"
-        onSearch={handleSearch}
-        style={{ width: 200 }}
-        allowClear
-      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+        }}
+      >
+        <Button type="primary" onClick={showAddModal}>
+          新增
+        </Button>
+        <Input.Search
+          placeholder="输入名称进行搜索"
+          onSearch={handleSearch}
+          style={{ width: 200 }}
+          allowClear
+        />
+      </div>
       <Table
         columns={columns}
         dataSource={roles}
@@ -187,10 +197,13 @@ const RoleManager: React.FC = () => {
         role={editingRole}
         permissions={permissions}
         onCancel={() => setIsPermissionModalVisible(false)}
-        onSave={(permissions) => {
-          console.log("分配的权限: ", permissions);
-          setIsPermissionModalVisible(false);
+        onSave={async (permissions) => {
+          await axios.put(
+            `/sys-service/role/${editingRole.roleId}/permissions`,
+            { permissions }
+          );
           message.success("权限分配成功");
+          setIsPermissionModalVisible(false);
         }}
       />
     </div>

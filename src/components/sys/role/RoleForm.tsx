@@ -1,27 +1,21 @@
-import React, { useEffect } from "react";
-import { Modal, Form, Input, Select } from "antd";
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Select } from 'antd';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
-const RoleForm: React.FC<{
-  visible: boolean;
-  role: any;
-  onCancel: () => void;
-  onSave: (role: any) => void;
-}> = ({ visible, role, onCancel, onSave }) => {
+const RoleForm: React.FC<{ visible: boolean, role: any, onCancel: () => void, onSave: (role) => void }> = ({ visible, role, onCancel, onSave }) => {
   const [form] = Form.useForm();
 
-  // 确保每次打开都是最新的数据
   useEffect(() => {
     if (visible) {
-      form.setFieldsValue(role || { roleName: "", roleType: "", remark: "" });
+      form.setFieldsValue(role || { roleName: '', roleType: '', remark: '' });
     }
   }, [visible, role]);
 
   return (
     <Modal
-      title={role ? "编辑角色" : "新增角色"}
+      title={role ? '编辑角色' : '新增角色'}
       visible={visible}
       onOk={() => {
         form.validateFields().then((values) => {
@@ -38,7 +32,7 @@ const RoleForm: React.FC<{
         <Form.Item
           name="roleName"
           label="角色名称"
-          rules={[{ required: true, message: "请输入角色名称" }]}
+          rules={[{ required: true, message: '请输入角色名称' }]}
         >
           <Input />
         </Form.Item>
