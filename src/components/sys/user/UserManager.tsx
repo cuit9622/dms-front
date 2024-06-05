@@ -43,13 +43,12 @@ const UserManager: React.FC = () => {
         params: { page: page, pageSize: pageSize, nickname: searchText },
       });
       const data = response.data;
-      console.log(data);
 
       setUsers(data.records);
 
       setPagination({ ...pagination, total: data.total });
     } catch (error) {
-      message.error("获取用户失败");
+      message.error(error.data.msg);
     }
   };
 
@@ -68,23 +67,25 @@ const UserManager: React.FC = () => {
   const handleEdit = async (user: User) => {
     try {
       const response = await axios.get(`/sys-service/role/list/${user.userId}`);
-      const userWithRole = { ...user, roleId: response.data.roleId };
+      const getUser = await axios.get(`/sys-service/user/${user.userId}`);
+      
+      const userWithRole: any = { ...getUser.data, roleId: response.data.roleId };
       setIsModalVisible(true);
       setIsEdit(true);
       setCurrentUser(userWithRole);
       form.setFieldsValue({ ...userWithRole, resetPassword: false });
     } catch (error) {
-      message.error("获取用户角色信息失败");
+      message.error(error.data.msg);
     }
   };
 
   const handleDelete = async (userId: string) => {
     try {
-      await axios.delete(`/sys-service/user/delete/${userId}`);
+      const response = await axios.delete(`/sys-service/user/delete/${userId}`);
       fetchUsers(pagination.current, pagination.pageSize, searchText);
-      message.success("用户删除成功");
+      message.success(response.data);
     } catch (error) {
-      message.error("删除用户失败");
+      message.error(error.data.msg);
     }
   };
 
@@ -94,27 +95,42 @@ const UserManager: React.FC = () => {
       const values = await form.validateFields();
       // 编辑
       if (isEdit && currentUser) {
-        await axios.put(`/sys-service/user/edit/${currentUser.userId}`, values);
-        message.success("修改成功");
+        const resp = await axios.put(
+          `/sys-service/user/edit/${currentUser.userId}`,
+          values
+        );
+        console.log(resp);
+        
+        message.success(resp.data);
       } else {
-        await axios.post("/sys-service/user/add", values);
-        message.success("添加成功");
+        const resp = await axios.post("/sys-service/user/add", values);
+        message.success(resp.data);
       }
       fetchUsers(pagination.current, pagination.pageSize, searchText);
       setIsModalVisible(false);
     } catch (error) {
-      message.error("操作失败");
+      message.error(error.data.msg);
     }
   };
 
   const handleCancel = () => {
-    form.resetFields;
     setIsModalVisible(false);
+    form.resetFields();
   };
 
   const handleSearch = (value: string) => {
     setSearchText(value);
     fetchUsers(1, pagination.pageSize, value);
+  };
+
+  const confirmDelete = (userId: string) => {
+    Modal.confirm({
+      title: "确认删除",
+      content: "你确定要删除这个用户吗？",
+      okText: "确认",
+      cancelText: "取消",
+      onOk: () => handleDelete(userId),
+    });
   };
 
   const columns = [
@@ -145,7 +161,7 @@ const UserManager: React.FC = () => {
           </Button>
           <Button
             danger
-            onClick={() => handleDelete(record.userId)}
+            onClick={() => confirmDelete(record.userId)}
             style={{ backgroundColor: "#ff4d4f", color: "white" }}
           >
             删除
@@ -188,7 +204,7 @@ const UserManager: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <UserForm form={form} isEdit={isEdit}/>
+        <UserForm form={form} isEdit={isEdit} />
       </Modal>
     </div>
   );
