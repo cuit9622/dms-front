@@ -149,23 +149,15 @@ const RoleManager: React.FC = () => {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "16px",
-        }}
-      >
-        <Button type="primary" onClick={showAddModal}>
-          新增
-        </Button>
-        <Input.Search
-          placeholder="输入名称进行搜索"
-          onSearch={handleSearch}
-          style={{ width: 200 }}
-          allowClear
-        />
-      </div>
+      <Button type="primary" onClick={showAddModal}>
+        新增
+      </Button>
+      <Input.Search
+        placeholder="输入名称进行搜索"
+        onSearch={handleSearch}
+        style={{ width: 200 }}
+        allowClear
+      />
       <Table
         columns={columns}
         dataSource={roles}
