@@ -196,7 +196,7 @@ const RoleManager: React.FC = () => {
         onCancel={() => setIsPermissionModalVisible(false)}
         onSave={async (permissions) => {
           await axios.put(
-            `/sys-service/role/${editingRole.roleId}/permissions`,
+            `/sys-service/role/updatePermissions/${editingRole.roleId}`,
             { permissions }
           );
           message.success("权限分配成功");

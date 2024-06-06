@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Checkbox, Tree } from "antd";
+import { Modal, Form, Checkbox, Tree, TreeProps } from "antd";
 import axios from "../../../tools/axios";
 
 const PermissionForm: React.FC<{
@@ -12,7 +12,7 @@ const PermissionForm: React.FC<{
   const [form] = Form.useForm();
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
-  
+
   const formatPermissions = (permissions: any) => {
     return permissions.map((perm: any) => ({
       title: perm.menu.title,
@@ -23,14 +23,18 @@ const PermissionForm: React.FC<{
 
   const fetchRolePermissions = async (roleId: any) => {
     const response = await axios.get(`/sys-service/menu/list/${roleId}`);
-    console.log(response);  
     setCheckedKeys(response.data);
   };
 
+  const onCheck: TreeProps["onCheck"] = (checkedKeysValue) => {
+    console.log("onCheck", checkedKeysValue);
+    setCheckedKeys(checkedKeysValue as React.Key[]);
+  };
+
   // 确保每次打开都是最新的数据
-  useEffect(() => {   
+  useEffect(() => {
     if (visible) {
-      fetchRolePermissions(role.roleId)
+      fetchRolePermissions(role.roleId);
     }
   }, [visible, role]);
   return (
@@ -39,7 +43,7 @@ const PermissionForm: React.FC<{
       visible={visible}
       onOk={() => {
         form.validateFields().then((values) => {
-          onSave(values.permissions);
+          onSave(checkedKeys);
           form.resetFields();
         });
       }}
@@ -57,8 +61,9 @@ const PermissionForm: React.FC<{
           <Checkbox.Group>
             <Tree
               checkable
-              treeData={formatPermissions(permissions)}
               defaultExpandAll
+              treeData={formatPermissions(permissions)}
+              onCheck={onCheck}
               checkedKeys={checkedKeys}
               selectedKeys={selectedKeys}
             />
