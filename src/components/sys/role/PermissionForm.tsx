@@ -10,10 +10,9 @@ const PermissionForm: React.FC<{
 }> = ({ visible, role, permissions, onCancel, onSave }) => {
   const [form] = Form.useForm();
 
-  const formatPermissions = (permissions: any) => {
+  const formatPermissions = (permissions: any) => {    
     return permissions.map((perm: any) => ({
-      title: perm.title,
-      key: perm.code,
+      title: perm.menu.title,
       children: perm.children ? formatPermissions(perm.children) : [],
     }));
   };
@@ -29,7 +28,11 @@ const PermissionForm: React.FC<{
       title={`为 ${role?.roleName || "角色"} 分配权限`}
       visible={visible}
       onOk={() => {
+        console.log(form.getFieldValue("permissions"));
+        
         form.validateFields().then((values) => {
+          console.log(values);
+          
           onSave(values.permissions);
           form.resetFields();
         });
