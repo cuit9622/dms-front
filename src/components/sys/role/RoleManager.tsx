@@ -43,6 +43,8 @@ const RoleManager: React.FC = () => {
 
   const fetchPermissions = async () => {
     const response = await axios.get("/sys-service/menu/list");
+    console.log(response);
+    
     setPermissions(response.data);
   };
 
