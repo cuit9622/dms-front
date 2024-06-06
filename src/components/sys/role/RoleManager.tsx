@@ -15,7 +15,6 @@ const RoleManager: React.FC = () => {
   const [editingRole, setEditingRole] = useState(null);
 
   const [searchText, setSearchText] = useState<string>("");
-
   // 默认的页数
   const [pagination, setPagination] = useState({
     current: 1,
@@ -123,7 +122,7 @@ const RoleManager: React.FC = () => {
           </Button>
           <Button
             type="link"
-            onClick={() => {
+            onClick={async () => {
               setEditingRole(record);
               setIsPermissionModalVisible(true);
             }}

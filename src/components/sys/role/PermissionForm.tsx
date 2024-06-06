@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Checkbox, Tree } from "antd";
+import axios from "../../../tools/axios";
 
 const PermissionForm: React.FC<{
   visible: boolean;
@@ -9,18 +10,27 @@ const PermissionForm: React.FC<{
   onSave: (permissions: any) => void;
 }> = ({ visible, role, permissions, onCancel, onSave }) => {
   const [form] = Form.useForm();
-
-  const formatPermissions = (permissions: any) => {    
+  const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
+  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
+  
+  const formatPermissions = (permissions: any) => {
     return permissions.map((perm: any) => ({
       title: perm.menu.title,
+      key: perm.menu.menuId,
       children: perm.children ? formatPermissions(perm.children) : [],
     }));
   };
 
+  const fetchRolePermissions = async (roleId: any) => {
+    const response = await axios.get(`/sys-service/menu/list/${roleId}`);
+    console.log(response);  
+    setCheckedKeys(response.data);
+  };
+
   // 确保每次打开都是最新的数据
-  useEffect(() => {
+  useEffect(() => {   
     if (visible) {
-      form.setFieldsValue({ permissions: role?.permissions || [] });
+      fetchRolePermissions(role.roleId)
     }
   }, [visible, role]);
   return (
@@ -28,11 +38,7 @@ const PermissionForm: React.FC<{
       title={`为 ${role?.roleName || "角色"} 分配权限`}
       visible={visible}
       onOk={() => {
-        console.log(form.getFieldValue("permissions"));
-        
         form.validateFields().then((values) => {
-          console.log(values);
-          
           onSave(values.permissions);
           form.resetFields();
         });
@@ -53,6 +59,8 @@ const PermissionForm: React.FC<{
               checkable
               treeData={formatPermissions(permissions)}
               defaultExpandAll
+              checkedKeys={checkedKeys}
+              selectedKeys={selectedKeys}
             />
           </Checkbox.Group>
         </Form.Item>
