@@ -30,7 +30,7 @@ const UserManager: React.FC = () => {
   const [searchText, setSearchText] = useState<string>("");
   useEffect(() => {
     fetchUsers(pagination.current, pagination.pageSize, searchText);
-  }, []);
+  }, [pagination.current, pagination.total, pagination.pageSize]);
 
   // 获取用户信息
   const fetchUsers = async (
@@ -53,8 +53,8 @@ const UserManager: React.FC = () => {
   };
 
   // 处理分页改变的函数
-  const handleTableChange = (pagination: any) => {
-    setPagination(pagination);
+  const handleTableChange = (arg: any) => {
+    setPagination(arg);
   };
 
   const handleAdd = () => {
@@ -101,8 +101,6 @@ const UserManager: React.FC = () => {
           `/sys-service/user/edit/${currentUser.userId}`,
           values
         );
-        console.log(resp);
-
         message.success(resp.data);
       } else {
         const resp = await axios.post("/sys-service/user/add", values);
@@ -195,8 +193,6 @@ const UserManager: React.FC = () => {
           showSizeChanger: true, // 显示每页大小选择器
           pageSizeOptions: [5, 10, 15, 20],
           showQuickJumper: true, // 显示快速跳转
-          onChange: handleTableChange,
-          onShowSizeChange: handleTableChange,
         }}
         onChange={handleTableChange}
       />

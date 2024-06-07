@@ -25,7 +25,7 @@ const RoleManager: React.FC = () => {
   useEffect(() => {
     fetchRoles(pagination.current, pagination.pageSize, searchText);
     fetchPermissions();
-  }, [editingRole]);
+  }, [editingRole, pagination.current, pagination.pageSize, pagination.total]);
 
   const fetchRoles = async (
     page: number,
@@ -43,8 +43,6 @@ const RoleManager: React.FC = () => {
 
   const fetchPermissions = async () => {
     const response = await axios.get("/sys-service/menu/list");
-    console.log(response);
-    
     setPermissions(response.data);
   };
 
@@ -75,9 +73,9 @@ const RoleManager: React.FC = () => {
     });
   };
 
-  const handleTableChange = (pagination: any) => {
-    setPagination(pagination);
-    fetchRoles(pagination.current, pagination.pageSize, searchText);
+  // 处理分页改变的函数
+  const handleTableChange = (arg: any) => {
+    setPagination(arg);
   };
 
   const handleAddOrUpdate = async (role: any) => {
@@ -171,9 +169,8 @@ const RoleManager: React.FC = () => {
           showSizeChanger: true, // 显示每页大小选择器
           pageSizeOptions: [5, 10, 15, 20],
           showQuickJumper: true, // 显示快速跳转
-          onChange: handleTableChange,
-          onShowSizeChange: handleTableChange,
         }}
+        onChange={handleTableChange}
       />
 
       <RoleForm
