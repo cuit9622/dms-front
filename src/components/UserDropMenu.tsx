@@ -53,7 +53,9 @@ const UserDropMenu = (props: {
         <Space>
           <Space>
             <Avatar
-              src={user.avatar ? '/api/static/img/' + user.avatar : undefined}
+              src={
+                user.avatar ? '/api/static/img/' + user.avatar : '/avatar.png'
+              }
               size="large"
             />
           </Space>
