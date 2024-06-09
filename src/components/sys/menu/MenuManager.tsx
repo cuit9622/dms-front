@@ -3,7 +3,6 @@ import { Table, Button, Modal, message, Tag } from "antd";
 import axios from "../../../tools/axios";
 import * as ICONS from "@ant-design/icons/";
 import MenuModal from "./MenuModal";
-import { defaultMethod } from "react-router-dom/dist/dom";
 
 interface MenuItem {
   menuId: number;
@@ -21,6 +20,7 @@ const MenuManagement: React.FC = () => {
   // 菜单类型
   const menuType = ["目录", "菜单", "按钮"];
   const [menuData, setMenuData] = useState<MenuItem[]>([]);
+  // 显示菜单图标
   const antICONS: any = ICONS;
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -47,15 +47,14 @@ const MenuManagement: React.FC = () => {
     try {
       const response = await axios.get("/sys-service/menu/list");
       setMenuData(formatPermissions(response.data));
-    } catch (error) {
-      message.error("Failed to fetch menu data");
+    } catch (error: any) {
+      message.error(error.data.msg);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchMenuData();
-    console.log(menuData);
   }, []);
 
   const handleAddClick = () => {
@@ -70,11 +69,11 @@ const MenuManagement: React.FC = () => {
 
   const handleDeleteClick = async (menuId: number) => {
     try {
-      await axios.delete(`/sys-service/menu/${menuId}`);
-      message.success("Menu deleted successfully");
+      const resp = await axios.delete(`/sys-service/menu/${menuId}`);
+      message.success(resp.data);
       fetchMenuData();
-    } catch (error) {
-      message.error("Failed to delete menu");
+    } catch (error: any) {
+      message.error(error.data.msg);
     }
   };
 
@@ -85,16 +84,19 @@ const MenuManagement: React.FC = () => {
   const handleModalOk = async (values: MenuItem) => {
     try {
       if (currentMenu) {
-        await axios.put(`/sys-service/menu/${currentMenu.menuId}`, values);
-        message.success("Menu updated successfully");
+        const resp = await axios.put(
+          `/sys-service/menu/${currentMenu.menuId}`,
+          values
+        );
+        message.success(resp.data);
       } else {
-        await axios.post("/sys-service/menu", values);
-        message.success("Menu added successfully");
+        const resp = await axios.post("/sys-service/menu", values);
+        message.success(resp.data);
       }
       setIsModalVisible(false);
       fetchMenuData();
-    } catch (error) {
-      message.error("Failed to save menu");
+    } catch (error: any) {
+      message.error(error.data.msg);
     }
   };
 
@@ -184,7 +186,9 @@ const MenuManagement: React.FC = () => {
         新增
       </Button>
       <Table
-        defaultExpandAllRows={true}
+        expandable={{
+          defaultExpandAllRows: true,
+        }}
         columns={columns}
         dataSource={menuData}
         loading={loading}
