@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, message } from "antd";
+import { Table, Button, Modal, message, Tag } from "antd";
 import axios from "../../../tools/axios";
 import * as ICONS from "@ant-design/icons/";
 import MenuModal from "./MenuModal";
@@ -18,6 +18,8 @@ interface MenuItem {
 }
 
 const MenuManagement: React.FC = () => {
+  // 菜单类型
+  const menuType = ["目录", "菜单", "按钮"];
   const [menuData, setMenuData] = useState<MenuItem[]>([]);
   const antICONS: any = ICONS;
   const [loading, setLoading] = useState<boolean>(true);
@@ -118,8 +120,14 @@ const MenuManagement: React.FC = () => {
       title: "菜单类型",
       dataIndex: "type",
       key: "type",
-      render: (text: number) =>
-        text === 0 ? "目录" : text === 1 ? "菜单" : "按钮",
+      render: (type: number) => {
+        const color = ["geekblue", "green", "volcano"];
+        return (
+          <Tag color={color[type]} key={menuType[type]}>
+            {menuType[type]}
+          </Tag>
+        );
+      },
     },
     {
       title: "菜单路径",
