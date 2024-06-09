@@ -26,7 +26,7 @@ const MenuManagement: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentMenu, setCurrentMenu] = useState<MenuItem | null>(null);
 
-  const formatPermissions = (menus: any) => {
+  const formatMenus = (menus: any) => {
     return menus.map((menu: any) => ({
       menuId: menu.menu.menuId,
       icon: menu.menu.icon || "",
@@ -38,7 +38,7 @@ const MenuManagement: React.FC = () => {
       componentPath: menu.menu.componentPath || "",
       type: menu.menu.type,
       orderNum: menu.menu.orderNum,
-      children: menu.children ? formatPermissions(menu.children) : "",
+      children: menu.children ? formatMenus(menu.children) : "",
     }));
   };
 
@@ -46,7 +46,7 @@ const MenuManagement: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.get("/sys-service/menu/list");
-      setMenuData(formatPermissions(response.data));
+      setMenuData(formatMenus(response.data));
     } catch (error: any) {
       message.error(error.data.msg);
     }
@@ -186,9 +186,6 @@ const MenuManagement: React.FC = () => {
         新增
       </Button>
       <Table
-        expandable={{
-          defaultExpandAllRows: true,
-        }}
         columns={columns}
         dataSource={menuData}
         loading={loading}

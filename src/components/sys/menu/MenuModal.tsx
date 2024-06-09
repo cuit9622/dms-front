@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, TreeSelect } from "antd";
+import axios from "../../../tools/axios";
 
 interface MenuItem {
   menuId: number;
@@ -32,7 +33,19 @@ const MenuModal: React.FC<MenuModalProps> = ({
 }) => {
   const [form] = Form.useForm();
 
+  const [menus, setMenus] = useState<any>();
+  const formatMenus = (menus: any) => {
+    return menus.map((menu: any) => ({
+      menuId: menu.menu.menuId,
+      title: menu.menu.title || "",
+      children: menu.children ? formatMenus(menu.children) : "",
+    }));
+  };
   useEffect(() => {
+    axios.get("/sys-service/menu/getContent").then((resp) => {
+      setMenus(formatMenus(resp.data));
+    });
+
     if (currentMenu) {
       form.setFieldsValue(currentMenu);
     } else {
@@ -63,7 +76,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
           rules={[{ required: false, message: "请选择上级菜单" }]}
         >
           <TreeSelect
-            treeData={menuData.filter((item) => item.type !== 2)}
+            treeData={menus}
             placeholder="请选择上级菜单"
             treeDefaultExpandAll
             allowClear
