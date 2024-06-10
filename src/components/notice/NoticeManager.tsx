@@ -1,42 +1,35 @@
-import {
-  CopyOutlined,
-  SettingOutlined,
-  VerticalAlignBottomOutlined,
-  VerticalAlignTopOutlined,
-} from '@ant-design/icons'
-import { MenuProps, Modal, Popconfirm, Space, Table } from 'antd'
+import { Form, Modal, Popconfirm, Space, Table, message } from 'antd'
 import Search from 'antd/es/input/Search'
 import Button from 'antd/lib/button/button'
-import Menu from 'antd/lib/menu/menu'
-import { Student } from 'model/Student'
+import { Notice } from 'model/Notice'
 import { useEffect, useState } from 'react'
 import axios from '../../tools/axios'
-import StudentForm from './StudentForm'
+import NoticeForm from './NoticeForm'
 
-const StudentManager: React.FC = () => {
+const NoticeManager: React.FC = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
     total: 0,
   })
-  const [students, setStudents] = useState([])
+  const [notices, setNotices] = useState([])
   const [searchText, setSearchText] = useState<string>('')
 
   useEffect(() => {
-    fetchStudents(pagination.current, pagination.pageSize, searchText)
+    fetchNotices(pagination.current, pagination.pageSize, searchText)
   }, [pagination.current, pagination.pageSize, pagination.total])
-  // 获取学生列表
-  const fetchStudents = async (
+  // 获取公告列表
+  const fetchNotices = async (
     page: number,
     pageSize: number,
     searchText: string
   ) => {
-    const resp = await axios.get('/student/list', {
+    const resp = await axios.get('/notice/list', {
       params: { page, pageSize, name: searchText },
     })
     const data = resp.data
 
-    setStudents(data.records)
+    setNotices(data.records)
     setPagination({ ...pagination, total: data.total })
   }
 
@@ -47,9 +40,11 @@ const StudentManager: React.FC = () => {
   // 控制弹窗是否打开
   const [isModalVisible, setIsModalVisible] = useState(false)
 
-  // 是否正在编辑
   const [isEdit, setIsEdit] = useState(false)
-  const handleEdit = (student: Student) => {
+
+  const [form] = Form.useForm()
+
+  const handleEdit = (notice: Notice) => {
     setIsModalVisible(true)
     setIsEdit(true)
   }
@@ -57,9 +52,15 @@ const StudentManager: React.FC = () => {
   const handleCancel = () => {
     setIsModalVisible(false)
     setIsEdit(false)
+    form.resetFields()
   }
 
-  const handleOk = () => {
+  const handleOk = async () => {
+    const values = await form.validateFields()
+    console.log(values)
+    const resp = await axios.post('/notice/add', values)
+    message.success(resp.data)
+    fetchNotices(pagination.current, pagination.pageSize, searchText)
     setIsModalVisible(false)
     setIsEdit(false)
   }
@@ -67,57 +68,40 @@ const StudentManager: React.FC = () => {
   const handelAdd = () => {
     setIsModalVisible(true)
     setIsEdit(false)
+    form.resetFields()
   }
 
   const colums: any = [
     {
-      title: '姓名',
+      title: '标题',
+      dataIndex: 'title',
+      width: '15%',
+      align: 'center',
+    },
+    {
+      title: '内容',
+      dataIndex: 'content',
+      width: '25%',
+      align: 'center',
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
+      width: '15%',
+      align: 'center',
+    },
+    {
+      title: '发布者',
       dataIndex: 'name',
       width: '10%',
-      align: 'center',
-    },
-    {
-      title: '性别',
-      dataIndex: 'sex',
-      width: '5%',
-      align: 'center',
-    },
-    {
-      title: '班级',
-      dataIndex: 'classNumber',
-      width: '10%',
-      align: 'center',
-    },
-    {
-      title: '学号',
-      dataIndex: 'stuNum',
-      width: '14%',
-      align: 'center',
-    },
-    {
-      title: '学院',
-      dataIndex: 'college',
-      width: '14%',
-      align: 'center',
-    },
-    {
-      title: '专业',
-      dataIndex: 'major',
-      width: '14%',
-      align: 'center',
-    },
-    {
-      title: '电话',
-      dataIndex: 'tel',
-      width: '14%',
       align: 'center',
     },
     {
       align: 'center',
       title: '操作',
       dataIndex: 'operation',
-      width: '20%',
-      render: (_: any, record: Student) => (
+      width: '15%',
+      render: (_: any, record: Notice) => (
         <Space>
           <a
             onClick={() => {
@@ -125,44 +109,20 @@ const StudentManager: React.FC = () => {
             }}>
             编辑
           </a>
-          <Popconfirm title="是否删除该学生信息？" onConfirm={() => {}}>
+          <Popconfirm title="是否删除条公告信息？" onConfirm={() => {}}>
             <a style={{ color: 'red' }}>删除</a>
           </Popconfirm>
         </Space>
       ),
     },
   ]
-  const items: MenuProps['items'] = [
-    {
-      key: 'sub4',
-      label: 'Excel操作',
-      icon: <SettingOutlined />,
-      children: [
-        {
-          key: '1',
-          label: (
-            <Button icon={<VerticalAlignTopOutlined />}>1 导出Excel</Button>
-          ),
-        },
-        {
-          key: '2',
-          label: (
-            <Button icon={<VerticalAlignBottomOutlined />}>2 导入Excel</Button>
-          ),
-        },
-        {
-          key: '3',
-          label: <Button icon={<CopyOutlined />}>3 生成模板</Button>,
-        },
-      ],
-    },
-  ]
+
   return (
     <div>
       <div>
         <div>
           <Search
-            placeholder="输入姓名搜索"
+            placeholder="输入标题搜索"
             style={{ width: 200 }}
             size="middle"
           />
@@ -173,9 +133,9 @@ const StudentManager: React.FC = () => {
             style={{
               marginLeft: 10,
             }}>
-            新增学生
+            新增公告
           </Button>
-          <Popconfirm title="是否删除所选学生信息？">
+          <Popconfirm title="是否删除所选公告信息？">
             <Button
               danger
               disabled={false}
@@ -185,17 +145,6 @@ const StudentManager: React.FC = () => {
               批量删除
             </Button>
           </Popconfirm>
-          <Menu
-            style={{
-              width: 200,
-              float: 'right',
-              marginRight: 620,
-              position: 'relative',
-              bottom: 10,
-            }}
-            mode="vertical"
-            items={items}
-          />
         </div>
       </div>
       <div>
@@ -207,7 +156,7 @@ const StudentManager: React.FC = () => {
             type: 'checkbox',
           }}
           bordered
-          dataSource={students}
+          dataSource={notices}
           columns={colums}
           pagination={{
             current: pagination.current,
@@ -220,17 +169,16 @@ const StudentManager: React.FC = () => {
           }}
           onChange={handleTableChange}
         />
-
         <Modal
-          title={isEdit ? '编辑学生' : '新增学生'}
+          title={isEdit ? '编辑公告' : '新增公告'}
           onCancel={handleCancel}
           open={isModalVisible}
           onOk={handleOk}>
-          <StudentForm />
+          <NoticeForm form={form} isEdit={isEdit} />
         </Modal>
       </div>
     </div>
   )
 }
 
-export default StudentManager
+export default NoticeManager
