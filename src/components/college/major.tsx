@@ -1,19 +1,22 @@
 import axios from '../../tools/axios'
 import React, { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Radio, message } from 'antd'
-import CollegeForm from './collegeForm'
+import MajorForm from './majorForm'
+import type { SelectProps } from 'antd'
 
 // 数据类型
-interface College {
+interface Major {
+  majorId: string
   collegeId: string
   key: React.Key
+  majorName: string
   collegeName: string
   orderNum: number
-  createTime: Date
 }
 
-const College: React.FC = () => {
-  const [colleges, setColleges] = useState<College[]>([])
+const Major: React.FC = () => {
+  const [majors, setMajors] = useState<Major[]>([])
+
   // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false)
 
@@ -22,32 +25,63 @@ const College: React.FC = () => {
   const [editId, setEditId] = useState('-1')
 
   const [form] = Form.useForm()
+
+  //存储学院下拉框信息
+  const [options, setOptions] = useState<SelectProps['options']>([])
+  //获取学院下拉框信息
+  useEffect(() => {
+    const fetchColleges = async () => {
+      try {
+        const response = await axios.get(`/college/college/getAll`)
+        const data = response.data
+
+        const newOptions = data.map((college: any) => ({
+          value: college.collegeId,
+          label: college.collegeName,
+        }))
+        setOptions(newOptions)
+      } catch (error) {
+        console.error('Error fetching colleges:', error)
+      }
+    }
+    fetchColleges()
+  }, [])
+
   // 默认的页数
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
+    pages: 0,
     total: 0,
   })
   const [searchText, setSearchText] = useState<string>('')
+
   useEffect(() => {
     fetchColleges(pagination.current, pagination.pageSize, searchText)
   }, [pagination.current, pagination.total, pagination.pageSize])
 
-  // 获取学院信息
+  // 获取专业信息
   const fetchColleges = async (
     page: number,
     pageSize: number,
     searchText: string
   ) => {
     try {
-      const response = await axios.get('/college/college/list', {
-        params: { page: page, pageSize: pageSize, collegeName: searchText },
+      const response = await axios.get('/college/major/list', {
+        params: { page: page, pageSize: pageSize, majorName: searchText },
       })
       const data = response.data
 
-      setColleges(data.records)
+      setMajors(data.records)
 
-      setPagination({ ...pagination, total: data.total })
+      setPagination({
+        ...pagination,
+        total: data.total,
+        pages:
+          data.total % pageSize == 0
+            ? data.total / pageSize
+            : (data.total % pageSize) + 1,
+      })
     } catch (error: any) {
       message.error(error.data.msg)
     }
@@ -63,9 +97,9 @@ const College: React.FC = () => {
     setIsEdit(false)
   }
 
-  const handleDelete = async (collegeId: string) => {
+  const handleDelete = async (majorId: string) => {
     try {
-      const response = await axios.delete(`/college/college/${collegeId}`)
+      const response = await axios.delete(`/college/major/${majorId}`)
       fetchColleges(pagination.current, pagination.pageSize, searchText)
       message.success(response.data)
     } catch (error: any) {
@@ -73,10 +107,10 @@ const College: React.FC = () => {
     }
   }
 
-  const handleEdit = async (college: College) => {
+  const handleEdit = async (major: Major) => {
     setIsModalVisible(true)
     setIsEdit(true)
-    setEditId(college.collegeId)
+    setEditId(major.majorId)
   }
 
   // 处理是新增还是删除学院
@@ -86,13 +120,13 @@ const College: React.FC = () => {
 
       // 编辑
       if (isEdit) {
-        const resp = await axios.put(`/college/college/edit`, {
+        const resp = await axios.put(`/college/major/edit`, {
           ...values,
-          collegeId: editId,
+          majorId: editId,
         })
         message.success(resp.data)
       } else {
-        const resp = await axios.post('/college/college/add', values) // 新增
+        const resp = await axios.post('/college/major/add', values) // 新增
         message.success(resp.data)
       }
       fetchColleges(pagination.current, pagination.pageSize, searchText)
@@ -125,19 +159,24 @@ const College: React.FC = () => {
   }
   const columns = [
     {
-      title: '学院名称',
-      dataIndex: 'collegeName',
-      width: '40%',
+      title: '专业名称',
+      dataIndex: 'majorName',
+      width: '30%',
     },
     {
-      title: '排序',
+      title: '所属学院',
+      dataIndex: 'collegeName',
+      width: '30%',
+    },
+    {
+      title: '序号',
       dataIndex: 'orderNum',
-      width: '40%',
+      width: '25%',
     },
     {
       title: '操作',
       key: 'actions',
-      render: (_: any, record: College) => (
+      render: (_: any, record: Major) => (
         <span>
           <Button
             onClick={() => handleEdit(record)}
@@ -150,7 +189,7 @@ const College: React.FC = () => {
           </Button>
           <Button
             danger
-            onClick={() => confirmDelete(record.collegeId)}
+            onClick={() => confirmDelete(record.majorId)}
             style={{ backgroundColor: '#ff4d4f', color: 'white' }}>
             删除
           </Button>
@@ -162,7 +201,7 @@ const College: React.FC = () => {
   return (
     <div>
       <Input.Search
-        placeholder="输入学院名称进行搜索"
+        placeholder="输入专业名称进行搜索"
         onSearch={handleSearch}
         style={{ width: 220 }}
         allowClear
@@ -171,12 +210,12 @@ const College: React.FC = () => {
         style={{ margin: '0px 30px 10px 10px' }}
         type="primary"
         onClick={handleAdd}>
-        新增学院
+        新增专业
       </Button>
       <Table
         columns={columns}
-        dataSource={colleges}
-        rowKey="collegeId"
+        dataSource={majors}
+        rowKey="majorId"
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -188,14 +227,19 @@ const College: React.FC = () => {
         onChange={handleTableChange}
       />
       <Modal
-        title={isEdit ? '编辑学院' : '新增学院'}
+        title={isEdit ? '编辑专业' : '新增专业'}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}>
-        <CollegeForm form={form} isEdit={isEdit} collegeId={editId} />
+        <MajorForm
+          form={form}
+          isEdit={isEdit}
+          majorId={editId}
+          collegeOptions={options}
+        />
       </Modal>
     </div>
   )
 }
 
-export default College
+export default Major
