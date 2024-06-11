@@ -8,19 +8,23 @@ export interface DormBuilding {
   key?: string
   id: number
   name: String
-  sex: number
+  sex?: number
+  floor?: number
 }
 
 const DormBuildingMgr: React.FC = () => {
-  const dormBuilding = useRef<DormBuilding>({ id: 0, name: '', sex: 0 })
+  const dormBuilding = useRef<DormBuilding>({
+    id: 0,
+    name: '',
+  })
   const [modalOpen, setModalOpen] = useState(false)
 
   const [loading, setLoading] = useState(true)
-  const [list, setList] = useState<any>([])
-  const [params, setParams] = useState<any>({
+  const [list, setList] = useState<DormBuilding[]>([])
+  const [total, setTotal] = useState<number>(0)
+  const [page, setPage] = useState<PageRequest>({
     page: 1,
     pageSize: 10,
-    total: 1,
   })
   const { messageApi } = useContext(GlobalContext)
 
@@ -28,23 +32,22 @@ const DormBuildingMgr: React.FC = () => {
     if (modalOpen == true) {
       return
     }
-    const loadList = async () => {
-      const res = await axios.get('/dorm/dormBuilding', { params })
-      const data: PageResult<DormBuilding> = res.data
-      setParams({
-        ...params,
-        total: data.total,
-      })
-      setList(
-        data.records.map((item: DormBuilding) => {
-          item.key = item.id.toString()
-          return item
-        })
-      )
-      setLoading(false)
-    }
     loadList()
-  }, [params.total, params.page, params.pageSize, modalOpen])
+  }, [total, page.page, page.pageSize, modalOpen])
+
+  const loadList = async () => {
+    const res = await axios.get('/dorm/dormBuilding', { params: page })
+    const data: PageResult<DormBuilding> = res.data
+    setTotal(data.total)
+    setList(
+      data.records.map((item: DormBuilding) => {
+        item.key = item.id.toString()
+        return item
+      })
+    )
+    setLoading(false)
+  }
+
   const edit = (item: DormBuilding) => {
     dormBuilding.current = item
     setModalOpen(true)
@@ -53,23 +56,22 @@ const DormBuildingMgr: React.FC = () => {
   const del = async (id: number) => {
     await axios.delete(`/dorm/dormBuilding/${id}`)
     messageApi.success('成功删除')
-    // 通过修改params刷新列表
-    setParams({
-      ...params,
-      total: params.total - 1,
-    })
+    if (list.length == 1) {
+      setPage((old) => {
+        return { ...old, page: old.page - 1 }
+      })
+    }
+    setTotal((total) => total - 1)
   }
 
   const defaultColumns = [
     {
       title: '楼栋名称',
       dataIndex: 'name',
-      width: '33%',
     },
     {
       title: '类型',
       dataIndex: 'sex',
-      width: '33%',
       render: (sex: number) => (
         <span>
           {
@@ -81,9 +83,12 @@ const DormBuildingMgr: React.FC = () => {
       ),
     },
     {
+      title: '楼层',
+      dataIndex: 'floor',
+    },
+    {
       title: '操作',
       dataIndex: 'operation',
-      width: '33%',
       render: (_: any, record: any) => (
         <Space>
           <a
@@ -121,7 +126,12 @@ const DormBuildingMgr: React.FC = () => {
             <Button
               type="primary"
               onClick={() => {
-                dormBuilding.current = { id: 0, name: '', sex: -1 }
+                dormBuilding.current = {
+                  id: 0,
+                  name: '',
+                  sex: undefined,
+                  floor: undefined,
+                }
                 setModalOpen(true)
               }}>
               新增寝室楼
@@ -141,18 +151,17 @@ const DormBuildingMgr: React.FC = () => {
         <Pagination
           disabled={loading}
           style={{ float: 'right' }}
-          pageSize={params.pageSize}
+          pageSize={page.pageSize}
           showSizeChanger
           pageSizeOptions={[5, 10, 15, 20]}
           onChange={(page, pageSize) => {
             setLoading(true)
-            setParams({
-              ...params,
+            setPage({
               page: page,
               pageSize: pageSize,
             })
           }}
-          total={params.total}
+          total={total}
           showQuickJumper
           showTotal={(total) => `总共${total}条数据`}
         />

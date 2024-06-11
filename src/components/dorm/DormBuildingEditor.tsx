@@ -1,4 +1,4 @@
-import { Form, Input, Modal, Radio } from 'antd'
+import { Form, Input, InputNumber, Modal, Radio } from 'antd'
 import { GlobalContext } from 'app'
 import { useContext, useEffect } from 'react'
 import axios from 'tools/axios'
@@ -27,6 +27,7 @@ export function DormBuildingEditor(props: {
     const requestBody: DormBuilding = props.dormBuilding
     requestBody.name = values.name
     requestBody.sex = values.sex
+    requestBody.floor = values.floor
     await axios.put('/dorm/dormBuilding', requestBody)
     messageApi.success('成功修改寝室楼')
     props.setModalOpen(false)
@@ -74,6 +75,12 @@ export function DormBuildingEditor(props: {
               <Radio value={1}>男生寝室</Radio>
               <Radio value={0}>女生寝室</Radio>
             </Radio.Group>
+          </Form.Item>
+          <Form.Item
+            name="floor"
+            label="寝室楼层"
+            rules={[{ required: true, message: '请输入寝室楼层' }]}>
+            <InputNumber min={1} />
           </Form.Item>
         </Form>
       </div>
