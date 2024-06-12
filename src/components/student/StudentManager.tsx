@@ -52,9 +52,17 @@ const StudentManager: React.FC = () => {
 
   // 是否正在编辑
   const [isEdit, setIsEdit] = useState(false)
-  const handleEdit = (student: Student) => {
+
+  const [editId, setEditId] = useState<number>()
+
+  const handleEdit = async (student: Student) => {
     setIsModalVisible(true)
     setIsEdit(true)
+    setEditId(student.stuId)
+    const response = await axios.get(`/student/getOne/${student.stuId}`)
+    setCollegeInfo({ ...collegeInfo, isCollegeSelected: true })
+    setMajorInfo({ ...majorInfo, isMajorSelected: true })
+    form.setFieldsValue(response.data)
   }
 
   const handleCancel = () => {
@@ -66,8 +74,18 @@ const StudentManager: React.FC = () => {
 
   const handleOk = async () => {
     const student = await form.validateFields()
-    const resp = await axios.post('/student/add', student)
-    message.success(resp.data)
+    if (isEdit) {
+      // 编辑
+      const resp = await axios.put(`/student/edit`, {
+        ...student,
+        stuId: editId,
+      })
+      message.success(resp.data)
+    } else {
+      // 新增
+      const resp = await axios.post('/student/add', student)
+      message.success(resp.data)
+    }
     setIsModalVisible(false)
     setIsEdit(false)
     form.resetFields()

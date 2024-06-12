@@ -57,7 +57,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
 
   // 检查学号是否已存在
   const checkStuNum = async (rule: any, value: string) => {
-    if (value) {
+    if (value && !isEdit) {
       try {
         const response = await axios.get(`/student/check/${value}`)
         if (!response.data) {
@@ -100,7 +100,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             validator: checkStuNum,
           },
         ]}>
-        <Input />
+        <Input disabled={isEdit} />
       </Form.Item>
       <Form.Item
         name="college"
