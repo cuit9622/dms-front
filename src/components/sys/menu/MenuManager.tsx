@@ -28,6 +28,7 @@ const MenuManagement: React.FC = () => {
 
   const formatMenus = (menus: any) => {
     return menus.map((menu: any) => ({
+      parentId: menu.menu.parentId == 0 ? null : menu.menu.parentId,
       menuId: menu.menu.menuId,
       icon: menu.menu.icon || "",
       title: menu.menu.title || "",
@@ -63,6 +64,8 @@ const MenuManagement: React.FC = () => {
   };
 
   const handleEditClick = (menu: MenuItem) => {
+    console.log(menu);
+
     setCurrentMenu(menu);
     setIsModalVisible(true);
   };
@@ -85,12 +88,12 @@ const MenuManagement: React.FC = () => {
     try {
       if (currentMenu) {
         const resp = await axios.put(
-          `/sys-service/menu/${currentMenu.menuId}`,
+          `/sys-service/menu/update/${currentMenu.menuId}`,
           values
         );
         message.success(resp.data);
       } else {
-        const resp = await axios.post("/sys-service/menu", values);
+        const resp = await axios.post("/sys-service/menu/add", values);
         message.success(resp.data);
       }
       setIsModalVisible(false);
@@ -132,9 +135,19 @@ const MenuManagement: React.FC = () => {
       },
     },
     {
+      title: "权限字段",
+      dataIndex: "code",
+      key: "code",
+    },
+    {
       title: "菜单路径",
       dataIndex: "menuUrl",
       key: "menuUrl",
+    },
+    {
+      title: "路由名称",
+      dataIndex: "name",
+      key: "name",
     },
     {
       title: "路由地址",

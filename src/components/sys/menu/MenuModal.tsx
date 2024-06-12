@@ -45,7 +45,8 @@ const MenuModal: React.FC<MenuModalProps> = ({
     axios.get("/sys-service/menu/getContent").then((resp) => {
       setMenus(formatMenus(resp.data));
     });
-
+    console.log(menus);
+    
     if (currentMenu) {
       form.setFieldsValue(currentMenu);
     } else {
@@ -94,6 +95,14 @@ const MenuModal: React.FC<MenuModalProps> = ({
         >
           <Input />
         </Form.Item>
+
+        <Form.Item
+          name="code"
+          label="权限字段"
+          rules={[{ required: true, message: "请输入权限字段" }]}
+        >
+          <Input />
+        </Form.Item>
         <Form.Item
           name="icon"
           label="菜单图标"
@@ -128,6 +137,9 @@ const MenuModal: React.FC<MenuModalProps> = ({
                   label="菜单路径"
                   rules={[{ required: true, message: "请输入菜单路径" }]}
                 >
+                  <Input />
+                </Form.Item>
+                <Form.Item name="name" label="路由名称">
                   <Input />
                 </Form.Item>
                 <Form.Item
