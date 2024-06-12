@@ -1,22 +1,27 @@
 import { Form, FormInstance, Input, Radio, Select } from 'antd'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import axios from '../../tools/axios'
 interface StudentFormProps {
   form: FormInstance
   isEdit: boolean
+  collegeInfo: any
+  setCollegeInfo: any
+  majorInfo: any
+  setMajorInfo: any
+  classNumbers: any
+  setClassNumbers: any
 }
 
-const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
-  const [collegeInfo, setCollegeInfo] = useState({
-    colleges: [],
-    isSelected: false,
-  })
-  const [majorInfo, setMajorInfo] = useState({
-    majors: [],
-    isSelected: false,
-  })
-  const [classNumbers, setClassNumbers] = useState([])
-
+const StudentForm: React.FC<StudentFormProps> = ({
+  form,
+  isEdit,
+  collegeInfo,
+  setCollegeInfo,
+  majorInfo,
+  setMajorInfo,
+  classNumbers,
+  setClassNumbers,
+}) => {
   useEffect(() => {
     handleColleges()
   }, [])
@@ -29,13 +34,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
 
   // 获取所有专业
   const handleMajors = async () => {
+    form.setFieldValue('classNumber', '')
     form.setFieldValue('major', '')
     const resp = await axios.get(
       `/college/major/getAll/${form.getFieldValue('college')}`
     )
 
     setMajorInfo({ ...majorInfo, majors: resp.data })
-    setCollegeInfo({ ...collegeInfo, isSelected: true })
+    setCollegeInfo({ ...collegeInfo, isCollegeSelected: true })
   }
 
   // 获取所有班级
@@ -46,7 +52,23 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
     )
 
     setClassNumbers(resp.data)
-    setMajorInfo({ ...majorInfo, isSelected: true })
+    setMajorInfo({ ...majorInfo, isMajorSelected: true })
+  }
+
+  // 检查学号是否已存在
+  const checkStuNum = async (rule: any, value: string) => {
+    if (value) {
+      try {
+        const response = await axios.get(`/student/check/${value}`)
+        if (!response.data) {
+          throw new Error('学号已存在')
+        }
+      } catch (error) {
+        return Promise.reject(new Error(''))
+      }
+    }
+
+    return Promise.resolve()
   }
 
   return (
@@ -71,7 +93,13 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
       <Form.Item
         name="stuNum"
         label="学号"
-        rules={[{ required: true, message: '请输入学号' }]}>
+        rules={[
+          {
+            required: true,
+            message: '学号已存在或未输入',
+            validator: checkStuNum,
+          },
+        ]}>
         <Input />
       </Form.Item>
       <Form.Item
@@ -79,11 +107,6 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
         label="学院"
         rules={[{ required: true, message: '请选择学院' }]}>
         <Select
-          // onChange={() => {
-          //   setMajor([])
-          //   setIsChangeCollege(true)
-          // }}
-          // onSelect={getMajor}
           onSelect={handleMajors}
           showSearch
           placeholder="搜索学院关键字"
@@ -106,7 +129,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
         rules={[{ required: true, message: '请选择专业' }]}>
         <Select
           onSelect={handleClass}
-          disabled={!collegeInfo.isSelected}
+          disabled={!collegeInfo.isCollegeSelected}
           showSearch
           placeholder="搜索专业关键字"
           optionFilterProp="children"
@@ -127,7 +150,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
         label="班级"
         rules={[{ required: true, message: '请选择班级' }]}>
         <Select
-          disabled={!majorInfo.isSelected}
+          disabled={!majorInfo.isMajorSelected}
           showSearch
           placeholder="搜索班级关键字"
           optionFilterProp="children"
@@ -144,7 +167,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
           )}></Select>
       </Form.Item>
       <Form.Item
-        name="phone"
+        name="tel"
         label="电话"
         rules={[{ required: true, message: '请输入电话' }]}>
         <Input />

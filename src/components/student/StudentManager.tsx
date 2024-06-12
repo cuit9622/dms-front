@@ -4,7 +4,7 @@ import {
   VerticalAlignBottomOutlined,
   VerticalAlignTopOutlined,
 } from '@ant-design/icons'
-import { Form, MenuProps, Modal, Popconfirm, Space, Table } from 'antd'
+import { Form, MenuProps, Modal, Popconfirm, Space, Table, message } from 'antd'
 import Search from 'antd/es/input/Search'
 import Button from 'antd/lib/button/button'
 import Menu from 'antd/lib/menu/menu'
@@ -39,7 +39,6 @@ const StudentManager: React.FC = () => {
       params: { page, pageSize, name: searchText },
     })
     const data = resp.data
-
     setStudents(data.records)
     setPagination({ ...pagination, total: data.total })
   }
@@ -61,16 +60,42 @@ const StudentManager: React.FC = () => {
   const handleCancel = () => {
     setIsModalVisible(false)
     setIsEdit(false)
+    form.resetFields()
+    resetFormParams()
   }
 
-  const handleOk = () => {
+  const handleOk = async () => {
+    const student = await form.validateFields()
+    const resp = await axios.post('/student/add', student)
+    message.success(resp.data)
     setIsModalVisible(false)
     setIsEdit(false)
+    form.resetFields()
+    resetFormParams()
+    fetchStudents(pagination.current, pagination.pageSize, searchText)
   }
 
   const handelAdd = () => {
     setIsModalVisible(true)
     setIsEdit(false)
+  }
+
+  // 表单参数
+  const [collegeInfo, setCollegeInfo] = useState({
+    colleges: [],
+    isCollegeSelected: false,
+  })
+  const [majorInfo, setMajorInfo] = useState({
+    majors: [],
+    isMajorSelected: false,
+  })
+  const [classNumbers, setClassNumbers] = useState([])
+
+  // 重置表单参数
+  const resetFormParams = () => {
+    setCollegeInfo({ ...collegeInfo, isCollegeSelected: false })
+    setMajorInfo({ majors: [], isMajorSelected: false })
+    setClassNumbers([])
   }
 
   const colums: any = [
@@ -231,7 +256,16 @@ const StudentManager: React.FC = () => {
           onCancel={handleCancel}
           open={isModalVisible}
           onOk={handleOk}>
-          <StudentForm form={form} isEdit={isEdit} />
+          <StudentForm
+            form={form}
+            isEdit={isEdit}
+            collegeInfo={collegeInfo}
+            majorInfo={majorInfo}
+            classNumbers={classNumbers}
+            setCollegeInfo={setCollegeInfo}
+            setMajorInfo={setMajorInfo}
+            setClassNumbers={setClassNumbers}
+          />
         </Modal>
       </div>
     </div>
