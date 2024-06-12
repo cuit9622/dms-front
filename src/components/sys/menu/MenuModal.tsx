@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, TreeSelect } from "antd";
+import * as ICONS from "@ant-design/icons/";
 import axios from "../../../tools/axios";
 
 interface MenuItem {
@@ -28,10 +29,11 @@ const MenuModal: React.FC<MenuModalProps> = ({
   visible,
   onCancel,
   onOk,
-  menuData,
   currentMenu,
 }) => {
   const [form] = Form.useForm();
+  // 显示菜单图标
+  const antICONS: any = ICONS;
 
   const [menus, setMenus] = useState<any>();
   const formatMenus = (menus: any) => {
@@ -41,6 +43,14 @@ const MenuModal: React.FC<MenuModalProps> = ({
       children: menu.children ? formatMenus(menu.children) : "",
     }));
   };
+
+  const validateIcon = (_: any, value: string) => {
+    if (!value || ICONS[value]) {
+      return Promise.resolve();
+    }
+    return Promise.reject(new Error("输入正确的菜单图标"));
+  };
+
   useEffect(() => {
     axios.get("/sys-service/menu/getContent").then((resp) => {
       setMenus(formatMenus(resp.data));
@@ -103,13 +113,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
         >
           <Input />
         </Form.Item>
-        <Form.Item
-          name="icon"
-          label="菜单图标"
-          rules={[{ required: false, message: "请输入菜单图标" }]}
-        >
-          <Input />
-        </Form.Item>
+
         <Form.Item
           name="type"
           label="菜单类型"
@@ -132,6 +136,19 @@ const MenuModal: React.FC<MenuModalProps> = ({
           {({ getFieldValue }) =>
             getFieldValue("type") !== 2 && (
               <>
+                <Form.Item
+                  name="icon"
+                  label="菜单图标"
+                  rules={[
+                    {
+                      required: true,
+                      message: "输入正确的菜单图标",
+                      validator: validateIcon,
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
                 <Form.Item name="menuUrl" label="菜单路径">
                   <Input />
                 </Form.Item>

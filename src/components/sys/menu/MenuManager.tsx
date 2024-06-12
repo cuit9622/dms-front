@@ -211,7 +211,6 @@ const MenuManagement: React.FC = () => {
         visible={isModalVisible}
         onCancel={handleModalCancel}
         onOk={handleModalOk}
-        menuData={menuData}
         currentMenu={currentMenu}
       />
     </div>
