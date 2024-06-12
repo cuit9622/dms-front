@@ -1,8 +1,56 @@
-import { Form, Input, Radio, Select } from 'antd'
+import { Form, FormInstance, Input, Radio, Select } from 'antd'
+import { useEffect, useState } from 'react'
+import axios from '../../tools/axios'
+interface StudentFormProps {
+  form: FormInstance
+  isEdit: boolean
+}
 
-const StudentForm: React.FC = () => {
+const StudentForm: React.FC<StudentFormProps> = ({ form, isEdit }) => {
+  const [collegeInfo, setCollegeInfo] = useState({
+    colleges: [],
+    isSelected: false,
+  })
+  const [majorInfo, setMajorInfo] = useState({
+    majors: [],
+    isSelected: false,
+  })
+  const [classNumbers, setClassNumbers] = useState([])
+
+  useEffect(() => {
+    handleColleges()
+  }, [])
+
+  // 获取所有学院
+  const handleColleges = async () => {
+    const resp = await axios.get('/college/college/getAll')
+    setCollegeInfo({ ...collegeInfo, colleges: resp.data })
+  }
+
+  // 获取所有专业
+  const handleMajors = async () => {
+    form.setFieldValue('major', '')
+    const resp = await axios.get(
+      `/college/major/getAll/${form.getFieldValue('college')}`
+    )
+
+    setMajorInfo({ ...majorInfo, majors: resp.data })
+    setCollegeInfo({ ...collegeInfo, isSelected: true })
+  }
+
+  // 获取所有班级
+  const handleClass = async () => {
+    form.setFieldValue('classNumber', '')
+    const resp = await axios.get(
+      `/college/class/getAll/${form.getFieldValue('major')}`
+    )
+
+    setClassNumbers(resp.data)
+    setMajorInfo({ ...majorInfo, isSelected: true })
+  }
+
   return (
-    <Form layout="vertical">
+    <Form form={form} layout="vertical">
       <Form.Item
         name="name"
         label="姓名"
@@ -30,19 +78,70 @@ const StudentForm: React.FC = () => {
         name="college"
         label="学院"
         rules={[{ required: true, message: '请选择学院' }]}>
-        <Select></Select>
+        <Select
+          // onChange={() => {
+          //   setMajor([])
+          //   setIsChangeCollege(true)
+          // }}
+          // onSelect={getMajor}
+          onSelect={handleMajors}
+          showSearch
+          placeholder="搜索学院关键字"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            ((option?.label ?? '') as any).includes(input)
+          }
+          options={collegeInfo.colleges.map(
+            (item: { collegeId: number; collegeName: String }) => {
+              return {
+                value: item.collegeId,
+                label: item.collegeName,
+              }
+            }
+          )}></Select>
       </Form.Item>
       <Form.Item
         name="major"
         label="专业"
         rules={[{ required: true, message: '请选择专业' }]}>
-        <Select></Select>
+        <Select
+          onSelect={handleClass}
+          disabled={!collegeInfo.isSelected}
+          showSearch
+          placeholder="搜索专业关键字"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            ((option?.label ?? '') as any).includes(input)
+          }
+          options={majorInfo.majors.map(
+            (item: { majorId: number; majorName: String }) => {
+              return {
+                value: item.majorId,
+                label: item.majorName,
+              }
+            }
+          )}></Select>
       </Form.Item>
       <Form.Item
-        name="class"
+        name="classNumber"
         label="班级"
         rules={[{ required: true, message: '请选择班级' }]}>
-        <Select></Select>
+        <Select
+          disabled={!majorInfo.isSelected}
+          showSearch
+          placeholder="搜索班级关键字"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            ((option?.label ?? '') as any).includes(input)
+          }
+          options={classNumbers.map(
+            (item: { classId: number; className: String }) => {
+              return {
+                value: item.classId,
+                label: item.className,
+              }
+            }
+          )}></Select>
       </Form.Item>
       <Form.Item
         name="phone"

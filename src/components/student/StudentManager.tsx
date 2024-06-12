@@ -4,7 +4,7 @@ import {
   VerticalAlignBottomOutlined,
   VerticalAlignTopOutlined,
 } from '@ant-design/icons'
-import { MenuProps, Modal, Popconfirm, Space, Table } from 'antd'
+import { Form, MenuProps, Modal, Popconfirm, Space, Table } from 'antd'
 import Search from 'antd/es/input/Search'
 import Button from 'antd/lib/button/button'
 import Menu from 'antd/lib/menu/menu'
@@ -21,6 +21,10 @@ const StudentManager: React.FC = () => {
   })
   const [students, setStudents] = useState([])
   const [searchText, setSearchText] = useState<string>('')
+
+  const tsex = ['男', '女']
+
+  const [form] = Form.useForm()
 
   useEffect(() => {
     fetchStudents(pagination.current, pagination.pageSize, searchText)
@@ -81,6 +85,7 @@ const StudentManager: React.FC = () => {
       dataIndex: 'sex',
       width: '5%',
       align: 'center',
+      render: (value: any) => <>{tsex[value]}</>,
     },
     {
       title: '班级',
@@ -96,13 +101,13 @@ const StudentManager: React.FC = () => {
     },
     {
       title: '学院',
-      dataIndex: 'college',
+      dataIndex: 'collegeName',
       width: '14%',
       align: 'center',
     },
     {
       title: '专业',
-      dataIndex: 'major',
+      dataIndex: 'majorName',
       width: '14%',
       align: 'center',
     },
@@ -226,7 +231,7 @@ const StudentManager: React.FC = () => {
           onCancel={handleCancel}
           open={isModalVisible}
           onOk={handleOk}>
-          <StudentForm />
+          <StudentForm form={form} isEdit={isEdit} />
         </Modal>
       </div>
     </div>
