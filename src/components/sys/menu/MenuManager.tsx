@@ -64,8 +64,6 @@ const MenuManagement: React.FC = () => {
   };
 
   const handleEditClick = (menu: MenuItem) => {
-    console.log(menu);
-
     setCurrentMenu(menu);
     setIsModalVisible(true);
   };

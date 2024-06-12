@@ -27,15 +27,12 @@ const PermissionForm: React.FC<{
   };
 
   const onCheck: TreeProps["onCheck"] = (checkedKeysValue) => {
-    console.log("onCheck", checkedKeysValue);
     setCheckedKeys(checkedKeysValue as React.Key[]);
   };
 
   // 确保每次打开都是最新的数据
   useEffect(() => {
     if (visible) {
-      console.log(permissions);
-      
       fetchRolePermissions(role.roleId);
     }
   }, [visible, role]);

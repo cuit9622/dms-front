@@ -19,7 +19,6 @@ interface MenuModalProps {
   visible: boolean;
   onCancel: () => void;
   onOk: (values: MenuItem) => void;
-  menuData: MenuItem[];
   currentMenu: MenuItem | null;
 }
 
@@ -36,6 +35,8 @@ const MenuModal: React.FC<MenuModalProps> = ({
   const antICONS: any = ICONS;
 
   const [menus, setMenus] = useState<any>();
+
+  // 格式化菜单
   const formatMenus = (menus: any) => {
     return menus.map((menu: any) => ({
       menuId: menu.menu.menuId,
@@ -44,18 +45,18 @@ const MenuModal: React.FC<MenuModalProps> = ({
     }));
   };
 
+  // 验证菜单图标
   const validateIcon = (_: any, value: string) => {
     if (!value || ICONS[value]) {
       return Promise.resolve();
     }
-    return Promise.reject(new Error("输入正确的菜单图标"));
+    return Promise.reject(new Error("请输入正确的菜单图标"));
   };
 
   useEffect(() => {
     axios.get("/sys-service/menu/getContent").then((resp) => {
       setMenus(formatMenus(resp.data));
     });
-    console.log(menus);
 
     if (currentMenu) {
       form.setFieldsValue(currentMenu);
@@ -84,7 +85,19 @@ const MenuModal: React.FC<MenuModalProps> = ({
         <Form.Item
           name="parentId"
           label="上级菜单"
-          rules={[{ required: false, message: "请选择上级菜单" }]}
+          rules={[
+            {
+              required: false,
+              message: "请选择上级菜单",
+              validator(rule, value, callback) {
+                if (value === currentMenu?.menuId) {
+                  rule.message = "无法选择自己作为父节点";
+                  return Promise.reject();
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <TreeSelect
             treeData={menus}
@@ -142,7 +155,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
                   rules={[
                     {
                       required: true,
-                      message: "输入正确的菜单图标",
+                      message: "请输入正确的菜单图标",
                       validator: validateIcon,
                     },
                   ]}
