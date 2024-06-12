@@ -71,13 +71,15 @@ const MenuManagement: React.FC = () => {
   };
 
   const handleDeleteClick = async (menuId: number) => {
-    try {
-      const resp = await axios.delete(`/sys-service/menu/${menuId}`);
-      message.success(resp.data);
-      fetchMenuData();
-    } catch (error: any) {
-      message.error(error.data.msg);
-    }
+    Modal.confirm({
+      title: "确认删除",
+      content: "你确定要删除这个菜单吗？",
+      onOk: async () => {
+        const resp = await axios.delete(`/sys-service/menu/delete/${menuId}`);
+        fetchMenuData();
+        message.success(resp.data);
+      },
+    });
   };
 
   const handleModalCancel = () => {

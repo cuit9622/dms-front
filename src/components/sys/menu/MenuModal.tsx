@@ -46,7 +46,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
       setMenus(formatMenus(resp.data));
     });
     console.log(menus);
-    
+
     if (currentMenu) {
       form.setFieldsValue(currentMenu);
     } else {
@@ -132,11 +132,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
           {({ getFieldValue }) =>
             getFieldValue("type") !== 2 && (
               <>
-                <Form.Item
-                  name="menuUrl"
-                  label="菜单路径"
-                  rules={[{ required: true, message: "请输入菜单路径" }]}
-                >
+                <Form.Item name="menuUrl" label="菜单路径">
                   <Input />
                 </Form.Item>
                 <Form.Item name="name" label="路由名称">
