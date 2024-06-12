@@ -14,7 +14,7 @@ interface Major {
   orderNum: number
 }
 
-const Major: React.FC = () => {
+const Class: React.FC = () => {
   const [majors, setMajors] = useState<Major[]>([])
 
   // 处理是否弹出探窗
@@ -242,4 +242,4 @@ const Major: React.FC = () => {
   )
 }
 
-export default Major
+export default Class
