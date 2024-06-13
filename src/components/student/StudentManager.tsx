@@ -98,6 +98,12 @@ const StudentManager: React.FC = () => {
     setIsEdit(false)
   }
 
+  const handleDelete = async (stuId: number) => {
+    const resp = await axios.delete(`/student/delete/${stuId}`)
+    fetchStudents(pagination.current, pagination.pageSize, searchText)
+    message.success(resp.data)
+  }
+
   // 表单参数
   const [collegeInfo, setCollegeInfo] = useState({
     colleges: [],
@@ -173,7 +179,9 @@ const StudentManager: React.FC = () => {
             }}>
             编辑
           </a>
-          <Popconfirm title="是否删除该学生信息？" onConfirm={() => {}}>
+          <Popconfirm
+            title="是否删除该学生信息？"
+            onConfirm={() => handleDelete(record.stuId)}>
             <a style={{ color: 'red' }}>删除</a>
           </Popconfirm>
         </Space>
