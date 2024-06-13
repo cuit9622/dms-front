@@ -10,4 +10,5 @@ export interface Student {
   tel: string
   collgeName: string
   majorName: string
+  key: React.Key
 }

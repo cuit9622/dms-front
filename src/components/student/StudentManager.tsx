@@ -39,7 +39,14 @@ const StudentManager: React.FC = () => {
       params: { page, pageSize, name: searchText },
     })
     const data = resp.data
-    setStudents(data.records)
+    setStudents(
+      data.records.map((item: Student) => {
+        return {
+          ...item,
+          key: item.stuId,
+        }
+      })
+    )
     setPagination({ ...pagination, total: data.total })
   }
 
@@ -55,21 +62,26 @@ const StudentManager: React.FC = () => {
 
   const [editId, setEditId] = useState<number>()
 
+  // 编辑
   const handleEdit = async (student: Student) => {
     setIsModalVisible(true)
     setIsEdit(true)
     setEditId(student.stuId)
     const response = await axios.get(`/student/getOne/${student.stuId}`)
+    const college = await axios.get(
+      `/college/college/getOne/${student.college}`
+    )
     const major: any = await axios.get(`/college/major/getOne/${student.major}`)
     const classNum: any = await axios.get(
       `/college/class/getOne/${student.classNumber}`
     )
-    setCollegeInfo({ ...collegeInfo, isCollegeSelected: true })
+    setCollegeInfo({ colleges: [college.data], isCollegeSelected: true })
     setMajorInfo({ majors: [major.data], isMajorSelected: true })
     setClassNumbers([classNum.data])
     form.setFieldsValue(response.data)
   }
 
+  // 捕获取消
   const handleCancel = () => {
     setIsModalVisible(false)
     setIsEdit(false)
@@ -77,6 +89,7 @@ const StudentManager: React.FC = () => {
     resetFormParams()
   }
 
+  // 捕获提交
   const handleOk = async () => {
     const student = await form.validateFields()
     if (isEdit) {
@@ -98,15 +111,18 @@ const StudentManager: React.FC = () => {
     fetchStudents(pagination.current, pagination.pageSize, searchText)
   }
 
+  // 捕获新增
   const handelAdd = () => {
     setIsModalVisible(true)
     setIsEdit(false)
   }
 
+  // 捕获删除
   const handleDelete = async (stuId: number) => {
     const resp = await axios.delete(`/student/delete/${stuId}`)
     fetchStudents(pagination.current, pagination.pageSize, searchText)
     message.success(resp.data)
+    setSelectedRowKeys([])
   }
 
   // 表单参数
@@ -132,10 +148,21 @@ const StudentManager: React.FC = () => {
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: (selectedRowKeys: any, selectedRows: any) => {
+    onChange: (selectedRowKeys: any) => {
       setSelectedRowKeys(selectedRowKeys)
       console.log(selectedRowKeys)
     },
+  }
+
+  // 批量删除
+  const delBatch = async () => {
+    console.log(searchText)
+    const resp = await axios.delete(`/student/delete`, {
+      data: selectedRowKeys,
+    })
+    message.success('批量删除成功')
+    setSelectedRowKeys([])
+    fetchStudents(pagination.current, pagination.pageSize, searchText)
   }
 
   const colums: any = [
@@ -247,7 +274,7 @@ const StudentManager: React.FC = () => {
             }}>
             新增学生
           </Button>
-          <Popconfirm title="是否删除所选学生信息？">
+          <Popconfirm title="是否删除所选学生信息？" onConfirm={delBatch}>
             <Button
               danger
               disabled={selectedRowKeys.length === 0}
