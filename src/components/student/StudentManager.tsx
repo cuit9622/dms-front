@@ -8,6 +8,7 @@ import { Form, MenuProps, Modal, Popconfirm, Space, Table, message } from 'antd'
 import Search from 'antd/es/input/Search'
 import Button from 'antd/lib/button/button'
 import Menu from 'antd/lib/menu/menu'
+import rawAxios from 'axios'
 import { Student } from 'model/Student'
 import { useEffect, useState } from 'react'
 import axios from '../../tools/axios'
@@ -235,16 +236,35 @@ const StudentManager: React.FC = () => {
       ),
     },
   ]
+
+  // 捕获导出excel
+  const handleExport = async () => {
+    rawAxios({
+      url: 'http://127.0.0.1:8090/api/student/export',
+      method: 'GET',
+      responseType: 'blob', // important
+    }).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'student.xlsx')
+      document.body.appendChild(link)
+      link.click()
+    })
+    message.success('导出学生信息成功')
+  }
   const items: MenuProps['items'] = [
     {
-      key: 'sub4',
+      key: '1',
       label: 'Excel操作',
       icon: <SettingOutlined />,
       children: [
         {
           key: '1',
           label: (
-            <Button icon={<VerticalAlignTopOutlined />}>1 导出Excel</Button>
+            <Button icon={<VerticalAlignTopOutlined />} onClick={handleExport}>
+              1 导出Excel
+            </Button>
           ),
         },
         {
