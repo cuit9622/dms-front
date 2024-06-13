@@ -90,7 +90,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
               required: false,
               message: "请选择上级菜单",
               validator(rule, value, callback) {
-                if (value === currentMenu?.menuId) {
+                if (value && value === currentMenu?.menuId) {
                   rule.message = "无法选择自己作为父节点";
                   return Promise.reject();
                 }
