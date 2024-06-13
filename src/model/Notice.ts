@@ -6,4 +6,5 @@ export interface Notice {
   updateTime: Date
   creator: number
   name: string
+  key: React.Key
 }

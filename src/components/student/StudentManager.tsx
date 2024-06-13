@@ -156,17 +156,15 @@ const StudentManager: React.FC = () => {
     selectedRowKeys,
     onChange: (selectedRowKeys: any) => {
       setSelectedRowKeys(selectedRowKeys)
-      console.log(selectedRowKeys)
     },
   }
 
   // 批量删除
   const delBatch = async () => {
-    console.log(searchText)
     const resp = await axios.delete(`/student/delete`, {
       data: selectedRowKeys,
     })
-    message.success('批量删除成功')
+    message.success(resp.data)
     setSelectedRowKeys([])
     fetchStudents(pagination.current, pagination.pageSize, searchText)
   }
@@ -322,7 +320,7 @@ const StudentManager: React.FC = () => {
             pageSize: pagination.pageSize,
             total: pagination.total,
             showSizeChanger: true,
-            pageSizeOptions: [1, 5],
+            pageSizeOptions: [1, 5, 8],
             showQuickJumper: true,
             showTotal: (total: number) => '总共' + total + '条数据',
           }}

@@ -25,12 +25,26 @@ const NoticeManager: React.FC = () => {
     searchText: string
   ) => {
     const resp = await axios.get('/notice/list', {
-      params: { page, pageSize, name: searchText },
+      params: { page, pageSize, title: searchText },
     })
     const data = resp.data
 
-    setNotices(data.records)
+    setNotices(
+      data.records.map((item: Notice) => {
+        return {
+          ...item,
+          key: item.noticeId,
+        }
+      })
+    )
     setPagination({ ...pagination, total: data.total })
+  }
+
+  // 捕获搜索
+  const handleSearch = (value: string) => {
+    console.log(value)
+    setSearchText(value)
+    fetchNotices(1, pagination.pageSize, value)
   }
 
   const handleTableChange = (pagination: any) => {
@@ -44,30 +58,79 @@ const NoticeManager: React.FC = () => {
 
   const [form] = Form.useForm()
 
-  const handleEdit = (notice: Notice) => {
+  const [editId, setEditId] = useState<number>()
+
+  // 编辑
+  const handleEdit = async (notice: Notice) => {
     setIsModalVisible(true)
     setIsEdit(true)
+    setEditId(notice.noticeId)
+    const response = await axios.get(`/notice/getOne/${notice.noticeId}`)
+    form.setFieldsValue(response.data)
   }
 
+  // 捕获取消
   const handleCancel = () => {
     setIsModalVisible(false)
     setIsEdit(false)
     form.resetFields()
   }
 
+  // 捕获提交
   const handleOk = async () => {
-    const values = await form.validateFields()
-    const resp = await axios.post('/notice/add', values)
-    message.success(resp.data)
-    fetchNotices(pagination.current, pagination.pageSize, searchText)
+    const notice = await form.validateFields()
+    if (isEdit) {
+      // 编辑
+      const resp = await axios.put(`/notice/edit`, {
+        ...notice,
+        noticeId: editId,
+      })
+      message.success(resp.data)
+    } else {
+      // 新增
+      const resp = await axios.post('/notice/add', notice)
+      message.success(resp.data)
+    }
+
     setIsModalVisible(false)
     setIsEdit(false)
+    form.resetFields()
+    fetchNotices(pagination.current, pagination.pageSize, searchText)
   }
 
+  // 捕获新增
   const handelAdd = () => {
     setIsModalVisible(true)
     setIsEdit(false)
     form.resetFields()
+  }
+
+  // 捕获删除
+  const handleDelete = async (noticeId: number) => {
+    const resp = await axios.delete(`/notice/delete/${noticeId}`)
+    fetchNotices(pagination.current, pagination.pageSize, searchText)
+    message.success(resp.data)
+    setSelectedRowKeys([])
+  }
+
+  // 多选框
+  const [selectedRowKeys, setSelectedRowKeys] = useState<any>([])
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys: any) => {
+      setSelectedRowKeys(selectedRowKeys)
+    },
+  }
+
+  // 批量删除
+  const delBatch = async () => {
+    const resp = await axios.delete(`/notice/delete`, {
+      data: selectedRowKeys,
+    })
+    message.success(resp.data)
+    setSelectedRowKeys([])
+    fetchNotices(pagination.current, pagination.pageSize, searchText)
   }
 
   const colums: any = [
@@ -108,7 +171,11 @@ const NoticeManager: React.FC = () => {
             }}>
             编辑
           </a>
-          <Popconfirm title="是否删除条公告信息？" onConfirm={() => {}}>
+          <Popconfirm
+            title="是否删除条公告信息？"
+            onConfirm={() => {
+              handleDelete(record.noticeId)
+            }}>
             <a style={{ color: 'red' }}>删除</a>
           </Popconfirm>
         </Space>
@@ -121,6 +188,8 @@ const NoticeManager: React.FC = () => {
       <div>
         <div>
           <Search
+            onSearch={handleSearch}
+            allowClear
             placeholder="输入标题搜索"
             style={{ width: 200 }}
             size="middle"
@@ -134,10 +203,10 @@ const NoticeManager: React.FC = () => {
             }}>
             新增公告
           </Button>
-          <Popconfirm title="是否删除所选公告信息？">
+          <Popconfirm title="是否删除所选公告信息？" onConfirm={delBatch}>
             <Button
               danger
-              disabled={false}
+              disabled={selectedRowKeys.length === 0}
               style={{
                 marginLeft: 10,
               }}>
@@ -153,6 +222,7 @@ const NoticeManager: React.FC = () => {
             columnWidth: '5%',
             preserveSelectedRowKeys: true,
             type: 'checkbox',
+            ...rowSelection,
           }}
           bordered
           dataSource={notices}
@@ -162,7 +232,7 @@ const NoticeManager: React.FC = () => {
             pageSize: pagination.pageSize,
             total: pagination.total,
             showSizeChanger: true,
-            pageSizeOptions: [1, 5],
+            pageSizeOptions: [1, 5, 8],
             showQuickJumper: true,
             showTotal: (total: number) => '总共' + total + '条数据',
           }}
