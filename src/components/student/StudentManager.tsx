@@ -243,7 +243,6 @@ const StudentManager: React.FC = () => {
       url: 'http://127.0.0.1:8090/api/student/export',
       method: 'GET',
       responseType: 'blob', // important
-      data: 1,
     }).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
