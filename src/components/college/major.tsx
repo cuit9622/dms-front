@@ -151,7 +151,7 @@ const Major: React.FC = () => {
   const confirmDelete = (collegeId: string) => {
     Modal.confirm({
       title: '确认删除',
-      content: '你确定要删除这个学院吗？',
+      content: '你确定要删除这个专业吗？',
       okText: '确认',
       cancelText: '取消',
       onOk: () => handleDelete(collegeId),
