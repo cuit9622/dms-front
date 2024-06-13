@@ -28,7 +28,7 @@ const StudentManager: React.FC = () => {
 
   useEffect(() => {
     fetchStudents(pagination.current, pagination.pageSize, searchText)
-  }, [pagination.current, pagination.pageSize, pagination.total])
+  }, [pagination.current, pagination.pageSize, pagination.total, searchText])
   // 获取学生列表
   const fetchStudents = async (
     page: number,
@@ -48,6 +48,12 @@ const StudentManager: React.FC = () => {
       })
     )
     setPagination({ ...pagination, total: data.total })
+  }
+
+  // 捕获搜索
+  const handleSearch = (value: string) => {
+    setSearchText(value)
+    fetchStudents(1, pagination.pageSize, value)
   }
 
   const handleTableChange = (pagination: any) => {
@@ -261,9 +267,11 @@ const StudentManager: React.FC = () => {
       <div>
         <div>
           <Search
+            onSearch={handleSearch}
             placeholder="输入姓名搜索"
             style={{ width: 200 }}
             size="middle"
+            allowClear
           />
 
           <Button
