@@ -243,6 +243,7 @@ const StudentManager: React.FC = () => {
       url: 'http://127.0.0.1:8090/api/student/export',
       method: 'GET',
       responseType: 'blob', // important
+      data: 1,
     }).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
@@ -253,6 +254,24 @@ const StudentManager: React.FC = () => {
     })
     message.success('导出学生信息成功')
   }
+
+  const generateMould = async () => {
+    rawAxios({
+      url: 'http://127.0.0.1:8090/api/student/generate',
+      method: 'GET',
+      responseType: 'blob', // important
+      data: 1,
+    }).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'template.xlsx')
+      document.body.appendChild(link)
+      link.click()
+    })
+    message.success('导出Excel模板成功')
+  }
+
   const items: MenuProps['items'] = [
     {
       key: '1',
@@ -275,7 +294,11 @@ const StudentManager: React.FC = () => {
         },
         {
           key: '3',
-          label: <Button icon={<CopyOutlined />}>3 生成模板</Button>,
+          label: (
+            <Button icon={<CopyOutlined />} onClick={generateMould}>
+              3 生成模板
+            </Button>
+          ),
         },
       ],
     },
