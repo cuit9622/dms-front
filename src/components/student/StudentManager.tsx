@@ -60,8 +60,13 @@ const StudentManager: React.FC = () => {
     setIsEdit(true)
     setEditId(student.stuId)
     const response = await axios.get(`/student/getOne/${student.stuId}`)
+    const major: any = await axios.get(`/college/major/getOne/${student.major}`)
+    const classNum: any = await axios.get(
+      `/college/class/getOne/${student.classNumber}`
+    )
     setCollegeInfo({ ...collegeInfo, isCollegeSelected: true })
-    setMajorInfo({ ...majorInfo, isMajorSelected: true })
+    setMajorInfo({ majors: [major.data], isMajorSelected: true })
+    setClassNumbers([classNum.data])
     form.setFieldsValue(response.data)
   }
 
@@ -122,6 +127,17 @@ const StudentManager: React.FC = () => {
     setClassNumbers([])
   }
 
+  // 多选框
+  const [selectedRowKeys, setSelectedRowKeys] = useState<any>([])
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys: any, selectedRows: any) => {
+      setSelectedRowKeys(selectedRowKeys)
+      console.log(selectedRowKeys)
+    },
+  }
+
   const colums: any = [
     {
       title: '姓名',
@@ -138,7 +154,7 @@ const StudentManager: React.FC = () => {
     },
     {
       title: '班级',
-      dataIndex: 'classNumber',
+      dataIndex: 'className',
       width: '10%',
       align: 'center',
     },
@@ -234,7 +250,7 @@ const StudentManager: React.FC = () => {
           <Popconfirm title="是否删除所选学生信息？">
             <Button
               danger
-              disabled={false}
+              disabled={selectedRowKeys.length === 0}
               style={{
                 marginLeft: 10,
               }}>
@@ -261,6 +277,7 @@ const StudentManager: React.FC = () => {
             columnWidth: '5%',
             preserveSelectedRowKeys: true,
             type: 'checkbox',
+            ...rowSelection,
           }}
           bordered
           dataSource={students}
