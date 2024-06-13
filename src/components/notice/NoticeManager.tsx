@@ -57,7 +57,6 @@ const NoticeManager: React.FC = () => {
 
   const handleOk = async () => {
     const values = await form.validateFields()
-    console.log(values)
     const resp = await axios.post('/notice/add', values)
     message.success(resp.data)
     fetchNotices(pagination.current, pagination.pageSize, searchText)

@@ -1,106 +1,129 @@
 import React, { useEffect, useState } from 'react'
 import { Form, Input, InputNumber, FormInstance, Select } from 'antd'
-import type { SelectProps } from 'antd'
 import axios from '../../tools/axios'
 
 interface CollegeFormProps {
   form: FormInstance
   isEdit: boolean
-  majorId: String
-  collegeOptions: SelectProps['options']
+  classId: number
+  record: Class[]
 }
-
-const cityData = {
-  Zhejiang: ['Hangzhou', 'Ningbo', 'Wenzhou'],
-  Jiangsu: ['Nanjing', 'Suzhou', 'Zhenjiang'],
-}
-const [college, setCollege] = useState<any>([])
-const [major, setMajor] = useState<any>([])
-const [isChangeCollege, setIsChangeCollege] = useState(false)
-const [gradeAndClass, setGradeAndClass] = useState<
-  {
-    grade: number
-    classNumber: number[]
-  }[]
->([])
-type CityName = keyof typeof cityData
-
-const provinceData: CityName[] = ['Zhejiang', 'Jiangsu']
 
 // 数据类型
-interface Major {
-  majorId: string
-  collegeId: string
+interface Class {
+  majorId: number
+  collegeId: number
+  classId: number
   key: React.Key
   majorName: string
   collegeName: string
+  className: string
+  classYear: string
   orderNum: number
 }
 
-const MajorForm: React.FC<CollegeFormProps> = ({
+const ClassForm: React.FC<CollegeFormProps> = ({
   form,
   isEdit,
-  majorId,
-  collegeOptions,
+  classId,
+  record,
 }) => {
+  const [collegeInfo, setCollegeInfo] = useState({
+    colleges: [],
+    isSelected: false,
+  })
+  const [majorInfo, setMajorInfo] = useState({
+    majors: [],
+    isSelected: false,
+  })
   useEffect(() => {
+    handleColleges()
+  }, [])
+  useEffect(() => {
+    setCollegeInfo({ ...collegeInfo, isSelected: false })
     //编辑还是新增
     if (isEdit) {
-      const fetchRoles = async () => {
-        const response = await axios.get(`/college/major/getOne/${majorId}`)
-        form.setFieldsValue(response.data)
-      }
-      fetchRoles()
+      form.setFieldsValue(record[0])
+      setCollegeInfo({ ...collegeInfo, isSelected: true })
     } else {
       form.resetFields()
     }
-  }, [majorId])
-
-  const [cities, setCities] = useState(cityData[provinceData[0] as CityName])
-  const [secondCity, setSecondCity] = useState(
-    cityData[provinceData[0]][0] as CityName
-  )
-
-  const handleProvinceChange = (value: CityName) => {
-    setCities(cityData[value])
-    setSecondCity(cityData[value][0] as CityName)
-  }
-
-  const onSecondCityChange = (value: CityName) => {
-    setSecondCity(value)
-  }
+  }, [classId])
 
   const onChange = (value: string) => {
     console.log(`selected ${value}`)
   }
 
-  const getMajor = async (id: Number) => {
-    // 每次选择完学院后，清空专业
-    form.setFieldValue('majorId', '')
-    const mRes = await axios.get(`/student/major/${id}`)
-    let mData = mRes.data.data
-
-    setMajor(
-      mData.map((item: { id: React.Key; majorName: String }) => {
-        return {
-          key: item.id,
-          name: item.majorName,
-        }
-      })
-    )
+  // 获取所有学院
+  const handleColleges = async () => {
+    const resp = await axios.get('/college/college/getAll')
+    setCollegeInfo({ ...collegeInfo, colleges: resp.data })
   }
+
+  // 获取所有专业
+  const handleMajors = async () => {
+    form.setFieldValue('majorId', '')
+    const resp = await axios.get(
+      `/college/major/getAll/${form.getFieldValue('collegeId')}`
+    )
+
+    setMajorInfo({ ...majorInfo, majors: resp.data })
+    setCollegeInfo({ ...collegeInfo, isSelected: true })
+  }
+
   return (
     <Form style={{ width: '200px' }} form={form} layout="vertical">
       <Form.Item
-        name="majorName"
-        label="专业名称"
-        rules={[{ required: true, message: '请输入学院名称' }]}>
+        name="className"
+        label="班级名称"
+        rules={[{ required: true, message: '请输入班级名称' }]}>
         <Input />
       </Form.Item>
-
+      <Form.Item
+        name="collegeId"
+        label="学院名称"
+        rules={[{ required: true, message: '请选择学院' }]}>
+        <Select
+          onSelect={handleMajors}
+          showSearch
+          placeholder="搜索学院关键字"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            ((option?.label ?? '') as any).includes(input)
+          }
+          options={collegeInfo.colleges.map(
+            (item: { collegeId: number; collegeName: String }) => {
+              return {
+                value: item.collegeId,
+                label: item.collegeName,
+              }
+            }
+          )}></Select>
+      </Form.Item>
+      <Form.Item
+        name="majorName"
+        label="专业名称"
+        rules={[{ required: true, message: '请选择专业' }]}>
+        <Select
+          disabled={!collegeInfo.isSelected}
+          showSearch
+          placeholder="搜索专业关键字"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            ((option?.label ?? '') as any).includes(input)
+          }
+          options={majorInfo.majors.map(
+            (item: { majorId: number; majorName: String }) => {
+              return {
+                value: item.majorId,
+                label: item.majorName,
+              }
+            }
+          )}></Select>
+      </Form.Item>
       <Form.Item
         name="orderNum"
-        label="专业序号"
+        label="班级序号"
         rules={[{ required: true, message: '请输入学院序号' }]}>
         <InputNumber style={{ width: '200px' }} />
       </Form.Item>
@@ -108,4 +131,4 @@ const MajorForm: React.FC<CollegeFormProps> = ({
   )
 }
 
-export default MajorForm
+export default ClassForm

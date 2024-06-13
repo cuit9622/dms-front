@@ -52,9 +52,22 @@ const StudentManager: React.FC = () => {
 
   // 是否正在编辑
   const [isEdit, setIsEdit] = useState(false)
-  const handleEdit = (student: Student) => {
+
+  const [editId, setEditId] = useState<number>()
+
+  const handleEdit = async (student: Student) => {
     setIsModalVisible(true)
     setIsEdit(true)
+    setEditId(student.stuId)
+    const response = await axios.get(`/student/getOne/${student.stuId}`)
+    const major: any = await axios.get(`/college/major/getOne/${student.major}`)
+    const classNum: any = await axios.get(
+      `/college/class/getOne/${student.classNumber}`
+    )
+    setCollegeInfo({ ...collegeInfo, isCollegeSelected: true })
+    setMajorInfo({ majors: [major.data], isMajorSelected: true })
+    setClassNumbers([classNum.data])
+    form.setFieldsValue(response.data)
   }
 
   const handleCancel = () => {
@@ -66,8 +79,18 @@ const StudentManager: React.FC = () => {
 
   const handleOk = async () => {
     const student = await form.validateFields()
-    const resp = await axios.post('/student/add', student)
-    message.success(resp.data)
+    if (isEdit) {
+      // 编辑
+      const resp = await axios.put(`/student/edit`, {
+        ...student,
+        stuId: editId,
+      })
+      message.success(resp.data)
+    } else {
+      // 新增
+      const resp = await axios.post('/student/add', student)
+      message.success(resp.data)
+    }
     setIsModalVisible(false)
     setIsEdit(false)
     form.resetFields()
@@ -78,6 +101,12 @@ const StudentManager: React.FC = () => {
   const handelAdd = () => {
     setIsModalVisible(true)
     setIsEdit(false)
+  }
+
+  const handleDelete = async (stuId: number) => {
+    const resp = await axios.delete(`/student/delete/${stuId}`)
+    fetchStudents(pagination.current, pagination.pageSize, searchText)
+    message.success(resp.data)
   }
 
   // 表单参数
@@ -98,6 +127,17 @@ const StudentManager: React.FC = () => {
     setClassNumbers([])
   }
 
+  // 多选框
+  const [selectedRowKeys, setSelectedRowKeys] = useState<any>([])
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys: any, selectedRows: any) => {
+      setSelectedRowKeys(selectedRowKeys)
+      console.log(selectedRowKeys)
+    },
+  }
+
   const colums: any = [
     {
       title: '姓名',
@@ -114,7 +154,7 @@ const StudentManager: React.FC = () => {
     },
     {
       title: '班级',
-      dataIndex: 'classNumber',
+      dataIndex: 'className',
       width: '10%',
       align: 'center',
     },
@@ -155,7 +195,9 @@ const StudentManager: React.FC = () => {
             }}>
             编辑
           </a>
-          <Popconfirm title="是否删除该学生信息？" onConfirm={() => {}}>
+          <Popconfirm
+            title="是否删除该学生信息？"
+            onConfirm={() => handleDelete(record.stuId)}>
             <a style={{ color: 'red' }}>删除</a>
           </Popconfirm>
         </Space>
@@ -208,7 +250,7 @@ const StudentManager: React.FC = () => {
           <Popconfirm title="是否删除所选学生信息？">
             <Button
               danger
-              disabled={false}
+              disabled={selectedRowKeys.length === 0}
               style={{
                 marginLeft: 10,
               }}>
@@ -235,6 +277,7 @@ const StudentManager: React.FC = () => {
             columnWidth: '5%',
             preserveSelectedRowKeys: true,
             type: 'checkbox',
+            ...rowSelection,
           }}
           bordered
           dataSource={students}

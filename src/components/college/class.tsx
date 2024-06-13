@@ -1,51 +1,32 @@
 import axios from '../../tools/axios'
 import React, { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Radio, message } from 'antd'
-import MajorForm from './majorForm'
-import type { SelectProps } from 'antd'
+import ClassForm from './classForm'
 
 // 数据类型
-interface Major {
-  majorId: string
-  collegeId: string
+interface Class {
   key: React.Key
+  majorId: number
+  collegeId: number
+  classId: number
   majorName: string
   collegeName: string
+  className: string
+  classYear: string
   orderNum: number
 }
 
 const Class: React.FC = () => {
-  const [majors, setMajors] = useState<Major[]>([])
-
+  const [classes, setClasses] = useState<Class[]>([])
+  const [record, setRecords] = useState<Class[]>([])
   // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false)
 
   const [isEdit, setIsEdit] = useState(false)
 
-  const [editId, setEditId] = useState('-1')
+  const [editId, setEditId] = useState(-1)
 
   const [form] = Form.useForm()
-
-  //存储学院下拉框信息
-  const [options, setOptions] = useState<SelectProps['options']>([])
-  //获取学院下拉框信息
-  useEffect(() => {
-    const fetchColleges = async () => {
-      try {
-        const response = await axios.get(`/college/college/getAll`)
-        const data = response.data
-
-        const newOptions = data.map((college: any) => ({
-          value: college.collegeId,
-          label: college.collegeName,
-        }))
-        setOptions(newOptions)
-      } catch (error) {
-        console.error('Error fetching colleges:', error)
-      }
-    }
-    fetchColleges()
-  }, [])
 
   // 默认的页数
   const [pagination, setPagination] = useState({
@@ -67,20 +48,21 @@ const Class: React.FC = () => {
     searchText: string
   ) => {
     try {
-      const response = await axios.get('/college/major/list', {
-        params: { page: page, pageSize: pageSize, majorName: searchText },
+      const response = await axios.get('/college/class/list', {
+        params: { page: page, pageSize: pageSize, className: searchText },
       })
       const data = response.data
+      console.log(data.records)
 
-      setMajors(data.records)
+      setClasses(data.records)
 
       setPagination({
         ...pagination,
         total: data.total,
-        pages:
-          data.total % pageSize == 0
-            ? data.total / pageSize
-            : (data.total % pageSize) + 1,
+        // pages:
+        //   data.total % pageSize == 0
+        //     ? data.total / pageSize
+        //     : (data.total % pageSize) + 1,
       })
     } catch (error: any) {
       message.error(error.data.msg)
@@ -97,9 +79,9 @@ const Class: React.FC = () => {
     setIsEdit(false)
   }
 
-  const handleDelete = async (majorId: string) => {
+  const handleDelete = async (classId: number) => {
     try {
-      const response = await axios.delete(`/college/major/${majorId}`)
+      const response = await axios.delete(`/college/class/${classId}`)
       fetchColleges(pagination.current, pagination.pageSize, searchText)
       message.success(response.data)
     } catch (error: any) {
@@ -107,10 +89,11 @@ const Class: React.FC = () => {
     }
   }
 
-  const handleEdit = async (major: Major) => {
+  const handleEdit = async (record: Class) => {
     setIsModalVisible(true)
+    setRecords([record])
     setIsEdit(true)
-    setEditId(major.majorId)
+    setEditId(record.classId)
   }
 
   // 处理是新增还是删除学院
@@ -120,19 +103,23 @@ const Class: React.FC = () => {
 
       // 编辑
       if (isEdit) {
-        const resp = await axios.put(`/college/major/edit`, {
+        const resp = await axios.put(`/college/class/edit`, {
           ...values,
-          majorId: editId,
+          majorId: values.majorName,
+          classId: editId,
         })
         message.success(resp.data)
       } else {
-        const resp = await axios.post('/college/major/add', values) // 新增
+        const resp = await axios.post('/college/class/add', {
+          ...values,
+          majorId: values.majorName,
+        }) // 新增
         message.success(resp.data)
       }
       fetchColleges(pagination.current, pagination.pageSize, searchText)
       setIsModalVisible(false)
       setIsEdit(false)
-      setEditId('-1')
+      setEditId(-1)
     } catch (error: any) {
       message.error(error.data.msg)
     }
@@ -140,7 +127,7 @@ const Class: React.FC = () => {
 
   const handleCancel = () => {
     setIsModalVisible(false)
-    setEditId('-1' == '-1' ? '-2' : '-1')
+    setEditId(editId == -1 ? -2 : -1)
   }
 
   const handleSearch = (value: string) => {
@@ -148,35 +135,45 @@ const Class: React.FC = () => {
     fetchColleges(1, pagination.pageSize, value)
   }
 
-  const confirmDelete = (collegeId: string) => {
+  const confirmDelete = (classId: number) => {
     Modal.confirm({
       title: '确认删除',
-      content: '你确定要删除这个学院吗？',
+      content: '你确定要删除这个班级吗？',
       okText: '确认',
       cancelText: '取消',
-      onOk: () => handleDelete(collegeId),
+      onOk: () => handleDelete(classId),
     })
   }
   const columns = [
     {
+      title: '班级名称',
+      dataIndex: 'className',
+      width: '15%',
+    },
+    {
       title: '专业名称',
       dataIndex: 'majorName',
-      width: '30%',
+      width: '20%',
     },
     {
       title: '所属学院',
       dataIndex: 'collegeName',
-      width: '30%',
+      width: '20%',
+    },
+    {
+      title: '招生时间',
+      dataIndex: 'classYear',
+      width: '15%',
     },
     {
       title: '序号',
       dataIndex: 'orderNum',
-      width: '25%',
+      width: '15%',
     },
     {
       title: '操作',
       key: 'actions',
-      render: (_: any, record: Major) => (
+      render: (_: any, record: Class) => (
         <span>
           <Button
             onClick={() => handleEdit(record)}
@@ -189,7 +186,7 @@ const Class: React.FC = () => {
           </Button>
           <Button
             danger
-            onClick={() => confirmDelete(record.majorId)}
+            onClick={() => confirmDelete(record.classId)}
             style={{ backgroundColor: '#ff4d4f', color: 'white' }}>
             删除
           </Button>
@@ -214,8 +211,8 @@ const Class: React.FC = () => {
       </Button>
       <Table
         columns={columns}
-        dataSource={majors}
-        rowKey="majorId"
+        dataSource={classes}
+        rowKey="classId"
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -231,11 +228,11 @@ const Class: React.FC = () => {
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}>
-        <MajorForm
+        <ClassForm
           form={form}
           isEdit={isEdit}
-          majorId={editId}
-          collegeOptions={options}
+          classId={editId}
+          record={record}
         />
       </Modal>
     </div>
