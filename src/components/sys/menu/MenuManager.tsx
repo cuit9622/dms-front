@@ -110,7 +110,7 @@ const MenuManagement: React.FC = () => {
       key: "title",
     },
     {
-      title: "菜单图标",
+      title: "图标",
       dataIndex: "icon",
       key: "icon",
       render: (text: string) => {
@@ -120,9 +120,10 @@ const MenuManagement: React.FC = () => {
         const Icon = antICONS[text];
         return <Icon />;
       },
+      width: "4%",
     },
     {
-      title: "菜单类型",
+      title: "类型",
       dataIndex: "type",
       key: "type",
       render: (type: number) => {
@@ -133,11 +134,13 @@ const MenuManagement: React.FC = () => {
           </Tag>
         );
       },
+      width: "4%",
     },
     {
       title: "权限字段",
       dataIndex: "code",
       key: "code",
+      width: "10%",
     },
     {
       title: "菜单路径",
@@ -148,21 +151,19 @@ const MenuManagement: React.FC = () => {
       title: "路由名称",
       dataIndex: "name",
       key: "name",
+      width: "10%",
     },
     {
       title: "路由地址",
       dataIndex: "routePath",
       key: "routePath",
+      width: "10%",
     },
     {
       title: "组件路径",
       dataIndex: "componentPath",
       key: "componentPath",
-    },
-    {
-      title: "排序字段",
-      dataIndex: "orderNum",
-      key: "orderNum",
+      width: "10%",
     },
     {
       title: "操作",
