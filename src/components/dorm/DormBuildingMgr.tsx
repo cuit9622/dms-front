@@ -7,7 +7,7 @@ import { DormBuildingEditor } from './DormBuildingEditor'
 export interface DormBuilding {
   key?: string
   id: number
-  name: String
+  name: string
   sex?: number
   floor?: number
 }
