@@ -13,6 +13,7 @@ import { Student } from 'model/Student'
 import { useEffect, useState } from 'react'
 import axios from '../../tools/axios'
 import StudentForm from './StudentForm'
+import { UploadExcel } from './uploadExcel'
 
 const StudentManager: React.FC = () => {
   const [pagination, setPagination] = useState({
@@ -237,6 +238,15 @@ const StudentManager: React.FC = () => {
     },
   ]
 
+  // 开启文件上传modal
+  const [openUpload, setOpenUpload] = useState(false)
+  // 进度条
+  const [progress, setProgress] = useState(0)
+  const [pStatus, setPStatus] = useState(1)
+  // 是否显示校验中
+  const [isSpin, setIsSpin] = useState(false)
+  // 校验信息内容
+  const [checkInfo, setCheckInfo] = useState([])
   // 捕获导出excel
   const handleExport = async () => {
     rawAxios({
@@ -252,6 +262,19 @@ const StudentManager: React.FC = () => {
       link.click()
     })
     message.success('导出学生信息成功')
+  }
+
+  // 关闭上传Excel
+  const closeUpload = () => {
+    setOpenUpload(false)
+    // 进度条
+    setProgress(0)
+    // 校验状态
+    setPStatus(1)
+    // 是否在校验中
+    setIsSpin(false)
+    // 校验信息内容
+    setCheckInfo([])
   }
 
   const generateMould = async () => {
@@ -288,7 +311,11 @@ const StudentManager: React.FC = () => {
         {
           key: '2',
           label: (
-            <Button icon={<VerticalAlignBottomOutlined />}>2 导入Excel</Button>
+            <Button
+              icon={<VerticalAlignBottomOutlined />}
+              onClick={() => setOpenUpload(true)}>
+              2 导入Excel
+            </Button>
           ),
         },
         {
@@ -383,6 +410,23 @@ const StudentManager: React.FC = () => {
             setCollegeInfo={setCollegeInfo}
             setMajorInfo={setMajorInfo}
             setClassNumbers={setClassNumbers}
+          />
+        </Modal>
+        <Modal
+          centered
+          open={openUpload}
+          footer={null}
+          width={850}
+          onCancel={closeUpload}>
+          <UploadExcel
+            progress={progress}
+            setProgress={setProgress}
+            pStatus={pStatus}
+            setPStatus={setPStatus}
+            isSpin={isSpin}
+            setIsSpin={setIsSpin}
+            checkInfo={checkInfo}
+            setCheckInfo={setCheckInfo}
           />
         </Modal>
       </div>
