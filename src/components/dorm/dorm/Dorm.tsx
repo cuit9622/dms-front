@@ -19,6 +19,7 @@ export default function Dorm(props: {
           })
           return props.data.dormBeds.map((item: DormBedModel) => (
             <DormBed
+              key={item.id}
               data={{ ...item, dormID: props.data.id }}
               editBed={props.editBed}
             />

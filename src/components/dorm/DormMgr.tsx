@@ -90,11 +90,11 @@ const DormMgr: React.FC = () => {
     })()
   }, [])
   useEffect(() => {
-    if (dormModal == true) {
+    if (dormModal == true || bedModal == true) {
       return
     }
     loadList()
-  }, [update, reqParam, dormModal])
+  }, [update, reqParam, dormModal, bedModal])
 
   const loadList = async () => {
     const res = await axios.get('/dorm/dorm', { params: reqParam })
