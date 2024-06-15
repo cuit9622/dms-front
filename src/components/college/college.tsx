@@ -123,20 +123,23 @@ const College: React.FC = () => {
       onOk: () => handleDelete(collegeId),
     })
   }
-  const columns = [
+  const columns: any = [
     {
       title: '学院名称',
       dataIndex: 'collegeName',
       width: '40%',
+      align: 'center',
     },
     {
       title: '排序',
       dataIndex: 'orderNum',
       width: '40%',
+      align: 'center',
     },
     {
       title: '操作',
       key: 'actions',
+      align: 'center',
       render: (_: any, record: College) => (
         <span>
           <Button

@@ -157,25 +157,29 @@ const Major: React.FC = () => {
       onOk: () => handleDelete(collegeId),
     })
   }
-  const columns = [
+  const columns: any = [
     {
       title: '专业名称',
       dataIndex: 'majorName',
       width: '30%',
+      align: 'center',
     },
     {
       title: '所属学院',
       dataIndex: 'collegeName',
       width: '30%',
+      align: 'center',
     },
     {
       title: '序号',
       dataIndex: 'orderNum',
       width: '25%',
+      align: 'center',
     },
     {
       title: '操作',
       key: 'actions',
+      align: 'center',
       render: (_: any, record: Major) => (
         <span>
           <Button

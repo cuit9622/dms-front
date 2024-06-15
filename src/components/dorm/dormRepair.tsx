@@ -1,65 +1,61 @@
 import axios from '../../tools/axios'
 import React, { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Radio, message } from 'antd'
-import ClassForm from './classForm'
+import DormRepairForm from './dormRepairForm'
 
 // 数据类型
-interface Class {
+interface DormRepair {
   key: React.Key
-  majorId: number
-  collegeId: number
-  classId: number
-  majorName: string
-  collegeName: string
-  className: string
-  classYear: string
-  orderNum: number
+  repairId: number
+  username: string
+  userId: number
+  phone: number
+  dormName: string
+  repairText: string //报修理由
+  status: string //报修状态
+  repairTime: Date
 }
-
-const Class: React.FC = () => {
-  const [classes, setClasses] = useState<Class[]>([])
-  const [record, setRecords] = useState<Class[]>([])
+// 管理员报修管理界面！！！
+const DormRepair: React.FC = () => {
+  const [dormRepairs, setDormRepairs] = useState<DormRepair[]>([])
   // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false)
 
   const [isEdit, setIsEdit] = useState(false)
 
+  const status = ['未维修', '已维修']
+
   const [editId, setEditId] = useState(-1)
 
   const [form] = Form.useForm()
-
   // 默认的页数
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
-    pages: 0,
     total: 0,
   })
+
   const [searchText, setSearchText] = useState<string>('')
 
+  useEffect(() => {}, [])
+
   useEffect(() => {
-    fetchColleges(pagination.current, pagination.pageSize, searchText)
+    fetchRepairs(pagination.current, pagination.pageSize, searchText)
   }, [pagination.current, pagination.total, pagination.pageSize])
 
-  // 获取专业信息
-  const fetchColleges = async (
+  // 获取报修信息
+  const fetchRepairs = async (
     page: number,
     pageSize: number,
     searchText: string
   ) => {
     try {
-      const response = await axios.get('/college/class/list', {
-        params: { page: page, pageSize: pageSize, className: searchText },
+      const response = await axios.get('/dormRepair/repair/list', {
+        params: { page: page, pageSize: pageSize, dormName: searchText },
       })
       const data = response.data
-      console.log(data.records)
-
-      setClasses(data.records)
-
-      setPagination({
-        ...pagination,
-        total: data.total,
-      })
+      setDormRepairs(data.records)
+      setPagination({ ...pagination, total: data.total })
     } catch (error: any) {
       message.error(error.data.msg)
     }
@@ -75,44 +71,61 @@ const Class: React.FC = () => {
     setIsEdit(false)
   }
 
-  const handleDelete = async (classId: number) => {
+  const handleDelete = async (repairId: number) => {
     try {
-      const response = await axios.delete(`/college/class/${classId}`)
-      fetchColleges(pagination.current, pagination.pageSize, searchText)
+      const response = await axios.delete(`/dormRepair/repair/${repairId}`)
+      fetchRepairs(pagination.current, pagination.pageSize, searchText)
       message.success(response.data)
     } catch (error: any) {
       message.error(error.data.msg)
     }
   }
 
-  const handleEdit = async (record: Class) => {
-    setIsModalVisible(true)
-    setRecords([record])
-    setIsEdit(true)
-    setEditId(record.classId)
+  //是否确定已经维修
+  const confirmRepair = (repair: DormRepair) => {
+    if (repair.status == '1') {
+      message.error('该报修已处理')
+      return
+    }
+    Modal.confirm({
+      title: '处理维修',
+      content: '请确认是否已经维修',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => handleRepair(repair),
+    })
+  }
+  //处理报修
+  const handleRepair = async (dorm: DormRepair) => {
+    if (dorm.status == '0') {
+      const resp = await axios.put(`/dormRepair/repair/edit`, {
+        ...dorm,
+        status: 1,
+      })
+      fetchRepairs(pagination.current, pagination.pageSize, searchText)
+      message.success(resp.data)
+    } else {
+      message.error('该报修已处理')
+    }
   }
 
-  // 处理是新增还是删除学院
+  // 处理是新增还是删除报修
   const handleOk = async () => {
     try {
       const values = await form.validateFields()
 
       // 编辑
       if (isEdit) {
-        const resp = await axios.put(`/college/class/edit`, {
+        const resp = await axios.put(`/dormRepair/repair/edit`, {
           ...values,
-          majorId: values.majorName,
-          classId: editId,
+          collegeId: editId,
         })
         message.success(resp.data)
       } else {
-        const resp = await axios.post('/college/class/add', {
-          ...values,
-          majorId: values.majorName,
-        }) // 新增
+        const resp = await axios.post('/dormRepair/repair/add', values) // 新增
         message.success(resp.data)
       }
-      fetchColleges(pagination.current, pagination.pageSize, searchText)
+      fetchRepairs(pagination.current, pagination.pageSize, searchText)
       setIsModalVisible(false)
       setIsEdit(false)
       setEditId(-1)
@@ -123,72 +136,74 @@ const Class: React.FC = () => {
 
   const handleCancel = () => {
     setIsModalVisible(false)
-    setEditId(editId == -1 ? -2 : -1)
+    setEditId(-1)
   }
 
   const handleSearch = (value: string) => {
     setSearchText(value)
-    fetchColleges(1, pagination.pageSize, value)
+    fetchRepairs(1, pagination.pageSize, value)
   }
 
-  const confirmDelete = (classId: number) => {
+  const confirmDelete = (repairId: number) => {
     Modal.confirm({
       title: '确认删除',
-      content: '你确定要删除这个班级吗？',
+      content: '你确定要删除这条报修信息吗？',
       okText: '确认',
       cancelText: '取消',
-      onOk: () => handleDelete(classId),
+      onOk: () => handleDelete(repairId),
     })
   }
   const columns: any = [
     {
-      title: '班级名称',
-      dataIndex: 'className',
+      title: '宿舍',
+      dataIndex: 'dormName',
       width: '15%',
       align: 'center',
     },
     {
-      title: '专业名称',
-      dataIndex: 'majorName',
-      width: '20%',
-      align: 'center',
-    },
-    {
-      title: '所属学院',
-      dataIndex: 'collegeName',
-      width: '20%',
-      align: 'center',
-    },
-    {
-      title: '招生时间',
-      dataIndex: 'classYear',
+      title: '联系人',
+      dataIndex: 'username',
       width: '15%',
       align: 'center',
     },
     {
-      title: '序号',
-      dataIndex: 'orderNum',
+      title: '联系电话',
+      dataIndex: 'phone',
       width: '15%',
       align: 'center',
+    },
+    {
+      title: '维修说明',
+      dataIndex: 'repairText',
+      width: '15%',
+      align: 'center',
+    },
+    {
+      title: '维修状态',
+      dataIndex: 'status',
+      align: 'center',
+      render: (_: any, record: DormRepair) => (
+        <span>{record.status == '0' ? '未维修' : '已维修'}</span>
+      ),
     },
     {
       title: '操作',
       key: 'actions',
       align: 'center',
-      render: (_: any, record: Class) => (
+      render: (_: any, record: DormRepair) => (
         <span>
           <Button
-            onClick={() => handleEdit(record)}
+            onClick={() => confirmRepair(record)}
             style={{
               marginRight: 8,
               backgroundColor: '#1890ff',
               color: 'white',
             }}>
-            编辑
+            处理
           </Button>
           <Button
             danger
-            onClick={() => confirmDelete(record.classId)}
+            onClick={() => confirmDelete(record.repairId)}
             style={{ backgroundColor: '#ff4d4f', color: 'white' }}>
             删除
           </Button>
@@ -200,21 +215,21 @@ const Class: React.FC = () => {
   return (
     <div>
       <Input.Search
-        placeholder="输入班级名称进行搜索"
+        placeholder="输入学院名称进行搜索"
         onSearch={handleSearch}
         style={{ width: 220 }}
         allowClear
       />
-      <Button
+      {/* <Button
         style={{ margin: '0px 30px 10px 10px' }}
         type="primary"
         onClick={handleAdd}>
-        新增班级
-      </Button>
+        新增报修
+      </Button> */}
       <Table
         columns={columns}
-        dataSource={classes}
-        rowKey="classId"
+        dataSource={dormRepairs}
+        rowKey="collegeId"
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -225,20 +240,15 @@ const Class: React.FC = () => {
         }}
         onChange={handleTableChange}
       />
-      <Modal
-        title={isEdit ? '编辑班级' : '新增班级'}
+      {/* <Modal
+        title={isEdit ? '编辑学院' : '新增学院'}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}>
-        <ClassForm
-          form={form}
-          isEdit={isEdit}
-          classId={editId}
-          record={record}
-        />
-      </Modal>
+        <DormRepairForm form={form} isEdit={isEdit} repairId={editId} />
+      </Modal> */}
     </div>
   )
 }
 
-export default Class
+export default DormRepair

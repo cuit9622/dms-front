@@ -35,7 +35,7 @@ const CollegeForm: React.FC<CollegeFormProps> = ({
   }, [collegeId])
 
   return (
-    <Form style={{ width: '200px' }} form={form} layout="vertical">
+    <Form form={form} layout="vertical">
       <Form.Item
         name="collegeName"
         label="学院名称"

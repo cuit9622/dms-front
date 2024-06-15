@@ -44,7 +44,7 @@ const MajorForm: React.FC<CollegeFormProps> = ({
   }
 
   return (
-    <Form style={{ width: '200px' }} form={form} layout="vertical">
+    <Form form={form} layout="vertical">
       <Form.Item
         name="majorName"
         label="专业名称"

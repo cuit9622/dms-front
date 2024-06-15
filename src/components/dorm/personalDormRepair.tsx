@@ -1,29 +1,32 @@
 import axios from '../../tools/axios'
 import React, { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Radio, message } from 'antd'
-import ClassForm from './classForm'
+import DormRepairForm from './dormRepairForm'
 
 // 数据类型
-interface Class {
+interface DormRepair {
   key: React.Key
-  majorId: number
-  collegeId: number
-  classId: number
-  majorName: string
-  collegeName: string
-  className: string
-  classYear: string
-  orderNum: number
+  repairId: number
+  username: string
+  userId: number
+  phone: number
+  dormName: string
+  repairText: string //报修理由
+  status: string //报修状态
+  repairTime: Date
 }
-
-const Class: React.FC = () => {
-  const [classes, setClasses] = useState<Class[]>([])
-  const [record, setRecords] = useState<Class[]>([])
+// 学生报修界面！！！
+const PersonalDormRepair: React.FC = () => {
+  const [dormRepairs, setDormRepairs] = useState<DormRepair[]>([])
   // 处理是否弹出探窗
   const [isModalVisible, setIsModalVisible] = useState(false)
 
   const [isEdit, setIsEdit] = useState(false)
 
+  //传给form 用于回显信息
+  const [record, setRecords] = useState<DormRepair[]>([])
+
+  //当前编辑的报修信息的repairId
   const [editId, setEditId] = useState(-1)
 
   const [form] = Form.useForm()
@@ -32,34 +35,26 @@ const Class: React.FC = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
-    pages: 0,
     total: 0,
   })
-  const [searchText, setSearchText] = useState<string>('')
 
   useEffect(() => {
-    fetchColleges(pagination.current, pagination.pageSize, searchText)
+    fetchRepairs(pagination.current, pagination.pageSize, '')
   }, [pagination.current, pagination.total, pagination.pageSize])
 
-  // 获取专业信息
-  const fetchColleges = async (
+  // 获取报修信息
+  const fetchRepairs = async (
     page: number,
     pageSize: number,
     searchText: string
   ) => {
     try {
-      const response = await axios.get('/college/class/list', {
-        params: { page: page, pageSize: pageSize, className: searchText },
+      const response = await axios.get('/dormRepair/repair/list', {
+        params: { page: page, pageSize: pageSize, dormName: '' },
       })
       const data = response.data
-      console.log(data.records)
-
-      setClasses(data.records)
-
-      setPagination({
-        ...pagination,
-        total: data.total,
-      })
+      setDormRepairs(data.records)
+      setPagination({ ...pagination, total: data.total })
     } catch (error: any) {
       message.error(error.data.msg)
     }
@@ -75,47 +70,52 @@ const Class: React.FC = () => {
     setIsEdit(false)
   }
 
-  const handleDelete = async (classId: number) => {
+  const handleDelete = async (repairId: number) => {
     try {
-      const response = await axios.delete(`/college/class/${classId}`)
-      fetchColleges(pagination.current, pagination.pageSize, searchText)
+      const response = await axios.delete(`/dormRepair/repair/${repairId}`)
+      fetchRepairs(pagination.current, pagination.pageSize, '')
       message.success(response.data)
     } catch (error: any) {
       message.error(error.data.msg)
     }
   }
 
-  const handleEdit = async (record: Class) => {
+  //编辑报修
+  const handleEdit = async (dorm: DormRepair) => {
+    if (dorm.status == '1') {
+      message.info('该报修已处理，无法再编辑')
+      return
+    }
     setIsModalVisible(true)
-    setRecords([record])
+    setRecords([dorm])
     setIsEdit(true)
-    setEditId(record.classId)
+    setEditId(dorm.repairId)
   }
 
-  // 处理是新增还是删除学院
+  // 处理是新增还是删除报修
   const handleOk = async () => {
     try {
       const values = await form.validateFields()
 
       // 编辑
       if (isEdit) {
-        const resp = await axios.put(`/college/class/edit`, {
+        const resp = await axios.put(`/dormRepair/repair/edit`, {
           ...values,
-          majorId: values.majorName,
-          classId: editId,
+          repairId: editId,
         })
         message.success(resp.data)
       } else {
-        const resp = await axios.post('/college/class/add', {
+        const resp = await axios.post('/dormRepair/repair/add', {
           ...values,
-          majorId: values.majorName,
+          status: 0,
         }) // 新增
         message.success(resp.data)
       }
-      fetchColleges(pagination.current, pagination.pageSize, searchText)
+      fetchRepairs(pagination.current, pagination.pageSize, '')
+
       setIsModalVisible(false)
       setIsEdit(false)
-      setEditId(-1)
+      setEditId(editId < 0 ? editId - 1 : -1)
     } catch (error: any) {
       message.error(error.data.msg)
     }
@@ -123,59 +123,56 @@ const Class: React.FC = () => {
 
   const handleCancel = () => {
     setIsModalVisible(false)
-    setEditId(editId == -1 ? -2 : -1)
+    setEditId(editId < 0 ? editId - 1 : -1)
   }
 
-  const handleSearch = (value: string) => {
-    setSearchText(value)
-    fetchColleges(1, pagination.pageSize, value)
-  }
-
-  const confirmDelete = (classId: number) => {
+  const confirmDelete = (repairId: number) => {
     Modal.confirm({
       title: '确认删除',
-      content: '你确定要删除这个班级吗？',
+      content: '你确定要删除这条报修信息吗？',
       okText: '确认',
       cancelText: '取消',
-      onOk: () => handleDelete(classId),
+      onOk: () => handleDelete(repairId),
     })
   }
   const columns: any = [
     {
-      title: '班级名称',
-      dataIndex: 'className',
+      title: '宿舍',
+      dataIndex: 'dormName',
       width: '15%',
       align: 'center',
     },
     {
-      title: '专业名称',
-      dataIndex: 'majorName',
-      width: '20%',
-      align: 'center',
-    },
-    {
-      title: '所属学院',
-      dataIndex: 'collegeName',
-      width: '20%',
-      align: 'center',
-    },
-    {
-      title: '招生时间',
-      dataIndex: 'classYear',
+      title: '联系人',
+      dataIndex: 'username',
       width: '15%',
       align: 'center',
     },
     {
-      title: '序号',
-      dataIndex: 'orderNum',
+      title: '联系电话',
+      dataIndex: 'phone',
       width: '15%',
       align: 'center',
+    },
+    {
+      title: '维修说明',
+      dataIndex: 'repairText',
+      width: '15%',
+      align: 'center',
+    },
+    {
+      title: '维修状态',
+      dataIndex: 'status',
+      align: 'center',
+      render: (_: any, record: DormRepair) => (
+        <span>{record.status == '0' ? '未维修' : '已维修'}</span>
+      ),
     },
     {
       title: '操作',
       key: 'actions',
       align: 'center',
-      render: (_: any, record: Class) => (
+      render: (_: any, record: DormRepair) => (
         <span>
           <Button
             onClick={() => handleEdit(record)}
@@ -188,7 +185,7 @@ const Class: React.FC = () => {
           </Button>
           <Button
             danger
-            onClick={() => confirmDelete(record.classId)}
+            onClick={() => confirmDelete(record.repairId)}
             style={{ backgroundColor: '#ff4d4f', color: 'white' }}>
             删除
           </Button>
@@ -199,22 +196,16 @@ const Class: React.FC = () => {
 
   return (
     <div>
-      <Input.Search
-        placeholder="输入班级名称进行搜索"
-        onSearch={handleSearch}
-        style={{ width: 220 }}
-        allowClear
-      />
       <Button
         style={{ margin: '0px 30px 10px 10px' }}
         type="primary"
         onClick={handleAdd}>
-        新增班级
+        新增报修
       </Button>
       <Table
         columns={columns}
-        dataSource={classes}
-        rowKey="classId"
+        dataSource={dormRepairs}
+        rowKey="collegeId"
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -226,14 +217,14 @@ const Class: React.FC = () => {
         onChange={handleTableChange}
       />
       <Modal
-        title={isEdit ? '编辑班级' : '新增班级'}
+        title={isEdit ? '编辑报修信息' : '新增报修'}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}>
-        <ClassForm
+        <DormRepairForm
           form={form}
           isEdit={isEdit}
-          classId={editId}
+          repairId={editId}
           record={record}
         />
       </Modal>
@@ -241,4 +232,4 @@ const Class: React.FC = () => {
   )
 }
 
-export default Class
+export default PersonalDormRepair
