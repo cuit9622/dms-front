@@ -107,6 +107,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
         label="学院"
         rules={[{ required: true, message: '请选择学院' }]}>
         <Select
+          onClick={handleColleges}
           onSelect={handleMajors}
           showSearch
           placeholder="搜索学院关键字"
