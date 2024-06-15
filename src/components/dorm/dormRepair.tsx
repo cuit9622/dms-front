@@ -215,7 +215,7 @@ const DormRepair: React.FC = () => {
   return (
     <div>
       <Input.Search
-        placeholder="输入学院名称进行搜索"
+        placeholder="输入宿舍名称进行搜索"
         onSearch={handleSearch}
         style={{ width: 220 }}
         allowClear
