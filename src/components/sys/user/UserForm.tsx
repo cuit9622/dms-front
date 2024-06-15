@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Form, Input, Radio, FormInstance, Select } from "antd";
 import axios from "../../../tools/axios";
-
+interface User {
+  userId: string;
+  nickName: string;
+  phone: string;
+  sex: string;
+  role: string;
+  username: string;
+}
 interface UserFormProps {
   form: FormInstance;
   isEdit: boolean;
+  user: User | null;
 }
 
 interface Role {
@@ -12,17 +20,17 @@ interface Role {
   roleName: string;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
+const UserForm: React.FC<UserFormProps> = ({ form, isEdit, user }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [originUsername, setOriginUsername] = useState<string>("");
   useEffect(() => {
     // 获取所有角色信息
-
+    setOriginUsername(form.getFieldValue("username"));
     const fetchRoles = async () => {
       try {
         setOriginUsername(form.getFieldValue("username"));
         const response = await axios.get("/sys-service/role/list");
-        
+
         setRoles(response.data);
       } catch (error) {
         console.error("获取角色信息失败", error);
@@ -33,10 +41,7 @@ const UserForm: React.FC<UserFormProps> = ({ form, isEdit }) => {
 
   // 检查用户是否存在
   const checkUsername = async (rule: any, value: string) => {
-    setOriginUsername(form.getFieldValue("username"));
-
-
-    if (value && value !== originUsername) {
+    if (value && value !== user?.username) {
       try {
         const response = await axios.get(
           `/sys-service/user/${value}/${isEdit}`

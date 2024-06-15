@@ -202,7 +202,7 @@ const UserManager: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <UserForm form={form} isEdit={isEdit} />
+        <UserForm form={form} isEdit={isEdit} user={currentUser} />
       </Modal>
     </div>
   );
