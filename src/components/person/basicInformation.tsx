@@ -112,7 +112,9 @@ export function BasicInformation(props: any) {
           <MyUpload
             setName={setFileName}
             fileList={
-              user.avatar ? '/api/static/img/' + user.avatar : undefined
+              user.avatar
+                ? '/api/auth/img/download?name=' + user.avatar
+                : undefined
             }
           />
         </div>
